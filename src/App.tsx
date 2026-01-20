@@ -1,5 +1,6 @@
 import { Layout } from '@/components/Layout';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { EditTaskPage } from '@/pages/EditTaskPage';
 import { HomePage } from '@/pages/HomePage';
 import { NewTaskPage } from '@/pages/NewTaskPage';
 import { SigninPage } from '@/pages/SigninPage';
@@ -30,6 +31,7 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/tasks/new" element={<NewTaskPage />} />
+              <Route path="/tasks/:id/edit" element={<EditTaskPage />} />
             </Route>
           </Route>
 
