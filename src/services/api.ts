@@ -8,7 +8,7 @@ import type {
 } from '@/lib/types';
 import { useAuthStore } from '@/stores/authStore';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Custom error class for API errors
 export class ApiError extends Error {
@@ -44,7 +44,6 @@ async function fetchWithAuth<T>(
 
   if (response.status === 401) {
     useAuthStore.getState().signout();
-    window.location.href = '/signin';
     throw new ApiError(401, 'Unauthorized');
   }
 
