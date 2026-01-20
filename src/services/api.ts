@@ -42,14 +42,16 @@ async function fetchWithAuth<T>(
     headers,
   });
 
-  if (response.status === 401) {
-    useAuthStore.getState().signout();
-    throw new ApiError(401, 'Unauthorized');
-  }
-
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'An error occurred' }));
-    throw new ApiError(response.status, error.detail || 'An error occurred');
+    if (response.status === 401) {
+      useAuthStore.getState().signout();
+    }
+
+    const error = await response.json().catch(() => ({
+      detail: response.statusText || 'An error occurred',
+    }));
+
+    throw new ApiError(response.status, error.detail);
   }
 
   // Handle 204 No Content
