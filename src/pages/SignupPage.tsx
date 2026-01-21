@@ -39,7 +39,7 @@ export function SignupPage() {
       <div className="glass-card w-full max-w-sm p-6">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-white">Create Account</h1>
-          <p className="text-slate-400 mt-2">Get started with TaskFlow</p>
+          <p className="text-slate-400 mt-2">Get started with Tasflou</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

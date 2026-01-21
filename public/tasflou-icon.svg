@@ -1,0 +1,69 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background Gradient: Deep Navy -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Glass Wave 1 (Back/Deep) -->
+    <linearGradient id="wave1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:0.6" />
+    </linearGradient>
+
+    <!-- Glass Wave 2 (Middle/Main) -->
+    <linearGradient id="wave2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#2563eb;stop-opacity:0.7" />
+    </linearGradient>
+
+    <!-- Glass Wave 3 (Front/Highlight) -->
+    <linearGradient id="wave3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#38bdf8;stop-opacity:0.8" />
+    </linearGradient>
+    
+    <!-- Clipping Path for Rounded Icon Shape -->
+    <clipPath id="roundClip">
+       <rect width="512" height="512" rx="128" />
+    </clipPath>
+
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+       <feGaussianBlur stdDeviation="15" result="blur"/>
+       <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  
+  <!-- Main Group Clipped to Rounded Shape -->
+  <g clip-path="url(#roundClip)">
+    
+    <!-- Background -->
+    <rect width="512" height="512" fill="url(#bgGrad)"/>
+    
+    <!-- Wave 1 -->
+    <path d="M-20 350 C 100 300, 200 450, 532 250 V 532 H -20 Z" 
+          fill="url(#wave1)"
+          stroke="#1e3a8a" stroke-width="2"/>
+
+    <!-- Wave 2 -->
+    <path d="M-20 400 C 120 320, 250 480, 532 300 V 532 H -20 Z" 
+          fill="url(#wave2)"
+          stroke="#60a5fa" stroke-width="1" stroke-opacity="0.5"/>
+
+    <!-- Wave 3 (Foreground Glass) -->
+    <path d="M-20 450 C 150 380, 300 500, 532 380 V 532 H -20 Z" 
+          fill="url(#wave3)"
+          stroke="#bae6fd" stroke-width="2"/>
+          
+    <!-- Floating Glass Orbs -->
+    <circle cx="150" cy="180" r="40" fill="url(#wave3)" stroke="#fff" stroke-width="2" stroke-opacity="0.5" />
+    <circle cx="360" cy="120" r="25" fill="url(#wave2)" stroke="#fff" stroke-width="1" stroke-opacity="0.3" />
+    <circle cx="420" cy="220" r="15" fill="url(#wave1)" stroke="#fff" stroke-width="1" stroke-opacity="0.2" />
+    
+  </g>
+  
+  <!-- Optional: Outer border to define the shape on dark backgrounds -->
+  <rect width="512" height="512" rx="128" fill="none" stroke="#1e293b" stroke-width="4" stroke-opacity="0.5" />
+
+</svg>
