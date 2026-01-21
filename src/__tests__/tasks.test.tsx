@@ -99,5 +99,55 @@ describe('Task Management Flows', () => {
          });
 
          confirmSpy.mockRestore();
-    });
+     });
+
+     it('allows filtering tasks by status', async () => {
+         render(<HomePage />);
+         
+         // Wait for initial tasks to load
+         await waitFor(() => {
+             expect(screen.getByText('Test Task 1')).toBeInTheDocument();
+             expect(screen.getByText('Test Task 2')).toBeInTheDocument();
+             expect(screen.getByText('Test Task 3')).toBeInTheDocument();
+         });
+
+         // Verify filter buttons are present
+         const allButton = screen.getByRole('button', { name: /^all$/i });
+         const todoButton = screen.getByRole('button', { name: /^todo$/i });
+         const doneButton = screen.getByRole('button', { name: /^done$/i });
+
+         expect(allButton).toBeInTheDocument();
+         expect(todoButton).toBeInTheDocument();
+         expect(doneButton).toBeInTheDocument();
+
+         // Click TODO filter
+         fireEvent.click(todoButton);
+
+         // Wait for filtered results (only TODO tasks)
+         await waitFor(() => {
+             expect(screen.getByText('Test Task 1')).toBeInTheDocument();
+             expect(screen.queryByText('Test Task 2')).toBeInTheDocument();
+             expect(screen.queryByText('Test Task 3')).not.toBeInTheDocument();
+         });
+
+         // Click DONE filter
+         fireEvent.click(doneButton);
+
+         // Wait for filtered results (only DONE tasks)
+         await waitFor(() => {
+             expect(screen.getByText('Test Task 3')).toBeInTheDocument();
+             expect(screen.queryByText('Test Task 1')).not.toBeInTheDocument();
+             expect(screen.queryByText('Test Task 2')).not.toBeInTheDocument();
+         });
+
+         // Click All filter
+         fireEvent.click(allButton);
+
+         // Wait for all tasks to show again
+         await waitFor(() => {
+             expect(screen.getByText('Test Task 1')).toBeInTheDocument();
+             expect(screen.getByText('Test Task 2')).toBeInTheDocument();
+             expect(screen.getByText('Test Task 3')).toBeInTheDocument();
+         });
+     });
 });

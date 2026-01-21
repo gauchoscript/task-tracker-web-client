@@ -1,11 +1,13 @@
+import { TaskStatus } from '@/lib/types';
 import { http, HttpResponse } from 'msw';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 // Initial tasks state
 let tasks = [
-  { id: '1', title: 'Test Task 1', description: 'Description 1', status: 'TODO' },
-  { id: '2', title: 'Test Task 2', description: 'Description 2', status: 'IN_PROGRESS' },
+  { id: '1', title: 'Test Task 1', description: 'Description 1', status: TaskStatus.TODO },
+  { id: '2', title: 'Test Task 2', description: 'Description 2', status: TaskStatus.TODO }, // Assuming you want Todo or another status
+  { id: '3', title: 'Test Task 3', description: 'Description 3', status: TaskStatus.DONE },
 ];
 
 export const handlers = [
@@ -19,8 +21,15 @@ export const handlers = [
   }),
 
   // Tasks
-  http.get(`${apiUrl}/tasks`, () => {
-    return HttpResponse.json(tasks)
+  http.get(`${apiUrl}/tasks`, ({ request }) => {
+    const url = new URL(request.url);
+    const status = url.searchParams.get('status');
+
+    const filteredTasks = status
+      ? tasks.filter(t => t.status === status)
+      : tasks;
+
+    return HttpResponse.json(filteredTasks)
   }),
 
   http.get(`${apiUrl}/tasks/:id`, ({ params }) => {
@@ -37,7 +46,7 @@ export const handlers = [
     const createdTask = {
       ...newTask,
       id: 'new-task-id', // Deterministic ID for creation test
-      status: 'TODO'
+      status: TaskStatus.TODO
     };
     tasks.push(createdTask);
     return HttpResponse.json(createdTask, { status: 201 })
@@ -64,7 +73,8 @@ export const handlers = [
 // Allow resetting tasks for tests if needed
 export const resetTasks = () => {
   tasks = [
-    { id: '1', title: 'Test Task 1', description: 'Description 1', status: 'TODO' },
-    { id: '2', title: 'Test Task 2', description: 'Description 2', status: 'IN_PROGRESS' },
+    { id: '1', title: 'Test Task 1', description: 'Description 1', status: TaskStatus.TODO },
+    { id: '2', title: 'Test Task 2', description: 'Description 2', status: TaskStatus.TODO },
+    { id: '3', title: 'Test Task 3', description: 'Description 3', status: TaskStatus.DONE },
   ];
 }
