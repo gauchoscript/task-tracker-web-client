@@ -1,3 +1,4 @@
+import { queryClient } from '@/lib/queryClient';
 import type { User } from '@/lib/types';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -23,12 +24,14 @@ export const useAuthStore = create<AuthState>()(
           user: user ?? null,
           isAuthenticated: true,
         }),
-      signout: () =>
+      signout: () => {
+        queryClient.removeQueries();
         set({
           token: null,
           user: null,
           isAuthenticated: false,
-        }),
+        });
+      },
       setUser: (user: User) => set({ user }),
     }),
     {

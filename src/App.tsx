@@ -5,17 +5,10 @@ import { HomePage } from '@/pages/HomePage';
 import { NewTaskPage } from '@/pages/NewTaskPage';
 import { SigninPage } from '@/pages/SigninPage';
 import { SignupPage } from '@/pages/SignupPage';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60, // 1 minute
-      retry: 1,
-    },
-  },
-});
+import { queryClient } from '@/lib/queryClient';
 
 function App() {
   return (
