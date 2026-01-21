@@ -1,3 +1,8 @@
+export enum TaskStatus {
+  TODO = 'todo',
+  DONE = 'done',
+}
+
 // User type
 export interface User {
   id: string;
@@ -10,7 +15,7 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  status?: string;
+  status: TaskStatus;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -42,7 +47,7 @@ export interface CreateTaskRequest {
 export interface UpdateTaskRequest {
   title?: string;
   description?: string;
-  status?: string;
+  status?: TaskStatus;
 }
 
 // API error response
