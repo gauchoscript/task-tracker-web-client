@@ -155,3 +155,26 @@ body {
 .link:hover {
   color: #60a5fa;
 }
+
+/* Filter Tab Styles */
+.filter-tab {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  background-color: #1f2937; /* gray-800 */
+  color: #d1d5db; /* gray-300 */
+  cursor: pointer;
+}
+
+.filter-tab:hover {
+  background-color: #374151; /* gray-700 */
+}
+
+.filter-tab.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); /* purple-600 */
+  color: #ffffff;
+}

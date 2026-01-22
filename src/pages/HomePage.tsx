@@ -27,31 +27,19 @@ export function HomePage() {
       <div className="flex gap-2 mb-4">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            filter === 'all'
-              ? 'bg-purple-600 text-white'
-              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-          }`}
+          className={`filter-tab ${filter === 'all' ? 'active' : ''}`}
         >
           All
         </button>
         <button
           onClick={() => setFilter(TaskStatus.TODO)}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            filter === TaskStatus.TODO
-              ? 'bg-purple-600 text-white'
-              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-          }`}
+          className={`filter-tab ${filter === TaskStatus.TODO ? 'active' : ''}`}
         >
           Todo
         </button>
         <button
           onClick={() => setFilter(TaskStatus.DONE)}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            filter === TaskStatus.DONE
-              ? 'bg-purple-600 text-white'
-              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-          }`}
+          className={`filter-tab ${filter === TaskStatus.DONE ? 'active' : ''}`}
         >
           Done
         </button>
