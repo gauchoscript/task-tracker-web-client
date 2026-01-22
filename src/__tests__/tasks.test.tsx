@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { TaskStatus } from '../lib/types';
 import { EditTaskPage } from '../pages/EditTaskPage';
 import { HomePage } from '../pages/HomePage';
 import { NewTaskPage } from '../pages/NewTaskPage';
@@ -78,6 +79,48 @@ describe('Task Management Flows', () => {
 
         await waitFor(() => {
             expect(screen.getByText('Updated Task Title')).toBeInTheDocument();
+        });
+    });
+
+    it('allows editing a task status', async () => {
+        render(
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/tasks/:id/edit" element={<EditTaskPage />} />
+            </Routes>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('Test Task 1')).toBeInTheDocument();
+        });
+
+        // Click Edit for Test Task 1 (which is TODO in mock handlers)
+        const editButtons = screen.getAllByRole('button', { name: /edit task/i });
+        fireEvent.click(editButtons[0]);
+
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { level: 2, name: /edit task/i })).toBeInTheDocument();
+        });
+
+        const statusSelect = screen.getByLabelText(/status/i);
+        expect(statusSelect).toHaveValue(TaskStatus.TODO);
+
+        fireEvent.change(statusSelect, { target: { value: TaskStatus.DONE } });
+        
+        const submitButton = screen.getByRole('button', { name: /update/i });
+        fireEvent.click(submitButton);
+
+        // After update, redirected to home. 
+        // We can verify it's moved to done by clicking the DONE filter and checking it's there.
+        await waitFor(() => {
+            expect(screen.getByText('Test Task 1')).toBeInTheDocument();
+        });
+
+        const doneButton = screen.getByRole('button', { name: /^done$/i });
+        fireEvent.click(doneButton);
+
+        await waitFor(() => {
+            expect(screen.getByText('Test Task 1')).toBeInTheDocument();
         });
     });
 
