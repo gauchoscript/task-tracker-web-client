@@ -1,7 +1,9 @@
-export enum TaskStatus {
-  TODO = 'todo',
-  DONE = 'done',
-}
+export const TaskStatus = {
+  TODO: 'todo',
+  DONE: 'done',
+} as const;
+
+export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
 
 // User type
 export interface User {

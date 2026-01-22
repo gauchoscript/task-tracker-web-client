@@ -1,4 +1,4 @@
-import type { CreateTaskRequest, Task, UpdateTaskRequest } from '@/lib/types';
+import { TaskStatus, type CreateTaskRequest, type Task, type UpdateTaskRequest } from '@/lib/types';
 import { tasksApi } from '@/services/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -35,6 +35,7 @@ export function useCreateTaskMutation() {
           id: `temp-${Date.now()}`,
           title: newTask.title,
           description: newTask.description,
+          status: TaskStatus.TODO,
           user_id: '',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
