@@ -1,5 +1,5 @@
 import { taskSchema, type TaskFormData } from '@/lib/schemas';
-import type { Task } from '@/lib/types';
+import { TaskStatus, type Task } from '@/lib/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
@@ -20,6 +20,7 @@ export function TaskForm({ task, onSubmit, onCancel, isSubmitting }: TaskFormPro
     defaultValues: {
       title: task?.title ?? '',
       description: task?.description ?? '',
+      status: task?.status ?? TaskStatus.TODO,
     },
   });
 
@@ -57,6 +58,25 @@ export function TaskForm({ task, onSubmit, onCancel, isSubmitting }: TaskFormPro
           <p className="error-text">{errors.description.message}</p>
         )}
       </div>
+
+      {task && (
+        <div>
+          <label htmlFor="status" className="block text-sm font-medium text-slate-300 mb-2">
+            Status
+          </label>
+          <select
+            id="status"
+            {...register('status')}
+            className="input-field"
+          >
+            <option value={TaskStatus.TODO}>Todo</option>
+            <option value={TaskStatus.DONE}>Done</option>
+          </select>
+          {errors.status && (
+            <p className="error-text">{errors.status.message}</p>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-col gap-3 pt-4">
         <button

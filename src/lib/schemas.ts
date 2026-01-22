@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TaskStatus } from './types';
 
 // Signin form schema
 export const signinSchema = z.object({
@@ -38,6 +39,9 @@ export const taskSchema = z.object({
   description: z
     .string()
     .max(1000, 'Description must be less than 1000 characters')
+    .optional(),
+  status: z
+    .nativeEnum(TaskStatus)
     .optional(),
 });
 
