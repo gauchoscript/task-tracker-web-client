@@ -53,7 +53,7 @@ export function TaskForm({ task, onSubmit, onCancel, isSubmitting }: TaskFormPro
           id="due_date"
           type="date"
           {...register('due_date')}
-          className="input-field [color-scheme:dark]"
+          className="input-field"
         />
         {errors.due_date && (
           <p className="error-text">{errors.due_date.message}</p>
