@@ -193,4 +193,60 @@ describe('Task Management Flows', () => {
              expect(screen.getByText('Test Task 3')).toBeInTheDocument();
          });
      });
+
+    it('allows creating and editing a task with a due date', async () => {
+        render(
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/tasks/new" element={<NewTaskPage />} />
+                <Route path="/tasks/:id/edit" element={<EditTaskPage />} />
+            </Routes>
+        );
+
+        // 1. Create task with due date
+        const createButton = screen.getByRole('button', { name: /create new task/i });
+        fireEvent.click(createButton);
+
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { level: 2, name: /new task/i })).toBeInTheDocument();
+        });
+
+        const titleInput = screen.getByLabelText(/title/i);
+        const dueDateInput = screen.getByLabelText(/due date/i);
+        const submitButton = screen.getByRole('button', { name: /create/i });
+
+        fireEvent.change(titleInput, { target: { value: 'Dated Task' } });
+        fireEvent.change(dueDateInput, { target: { value: '2026-03-01' } });
+        fireEvent.click(submitButton);
+
+        // Verify it shows up on home with formatted date
+        await waitFor(() => {
+            expect(screen.getByText('Dated Task')).toBeInTheDocument();
+            // The formatting in TaskItem is locale-dependent, but Mar 1, 2026 should be part of it
+            expect(screen.getByText(/March 1/i)).toBeInTheDocument();
+        });
+
+        // 2. Edit the task
+        const editButtons = screen.getAllByRole('button', { name: /edit task/i });
+        // The new task might be at the end or at the beginning depending on how getTasks returns it.
+        // In our mock handlers, it's pushed to the end.
+        fireEvent.click(editButtons[editButtons.length - 1]);
+
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { level: 2, name: /edit task/i })).toBeInTheDocument();
+        });
+
+        const editDueDateInput = screen.getByLabelText(/due date/i);
+        expect(editDueDateInput).toHaveValue('2026-03-01');
+
+        fireEvent.change(editDueDateInput, { target: { value: '2026-04-01' } });
+        const updateButton = screen.getByRole('button', { name: /update/i });
+        fireEvent.click(updateButton);
+
+        // Verify updated date on home
+        await waitFor(() => {
+            expect(screen.getByText('Dated Task')).toBeInTheDocument();
+            expect(screen.getByText(/April 1/i)).toBeInTheDocument();
+        });
+    });
 });

@@ -5,8 +5,8 @@ const apiUrl = import.meta.env.VITE_API_URL;
 
 // Initial tasks state
 let tasks = [
-  { id: '1', title: 'Test Task 1', description: 'Description 1', status: TaskStatus.TODO },
-  { id: '2', title: 'Test Task 2', description: 'Description 2', status: TaskStatus.TODO }, // Assuming you want Todo or another status
+  { id: '1', title: 'Test Task 1', description: 'Description 1', status: TaskStatus.TODO, due_date: '2026-12-31' },
+  { id: '2', title: 'Test Task 2', description: 'Description 2', status: TaskStatus.TODO },
   { id: '3', title: 'Test Task 3', description: 'Description 3', status: TaskStatus.DONE },
 ];
 
@@ -73,7 +73,7 @@ export const handlers = [
 // Allow resetting tasks for tests if needed
 export const resetTasks = () => {
   tasks = [
-    { id: '1', title: 'Test Task 1', description: 'Description 1', status: TaskStatus.TODO },
+    { id: '1', title: 'Test Task 1', description: 'Description 1', status: TaskStatus.TODO, due_date: '2026-12-31' },
     { id: '2', title: 'Test Task 2', description: 'Description 2', status: TaskStatus.TODO },
     { id: '3', title: 'Test Task 3', description: 'Description 3', status: TaskStatus.DONE },
   ];
