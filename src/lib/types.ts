@@ -18,6 +18,7 @@ export interface Task {
   title: string;
   description?: string;
   status: TaskStatus;
+  due_date?: string;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -44,12 +45,14 @@ export interface SigninRequest {
 export interface CreateTaskRequest {
   title: string;
   description?: string;
+  due_date?: string;
 }
 
 export interface UpdateTaskRequest {
   title?: string;
   description?: string;
   status?: TaskStatus;
+  due_date?: string;
 }
 
 // API error response

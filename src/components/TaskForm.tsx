@@ -1,3 +1,4 @@
+import { parseDateForInput } from '@/lib/dateUtils';
 import { taskSchema, type TaskFormData } from '@/lib/schemas';
 import { TaskStatus, type Task } from '@/lib/types';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,6 +22,7 @@ export function TaskForm({ task, onSubmit, onCancel, isSubmitting }: TaskFormPro
       title: task?.title ?? '',
       description: task?.description ?? '',
       status: task?.status ?? TaskStatus.TODO,
+      due_date: parseDateForInput(task?.due_date),
     },
   });
 
@@ -40,6 +42,21 @@ export function TaskForm({ task, onSubmit, onCancel, isSubmitting }: TaskFormPro
         />
         {errors.title && (
           <p className="error-text">{errors.title.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="due_date" className="block text-sm font-medium text-slate-300 mb-2">
+          Due Date
+        </label>
+        <input
+          id="due_date"
+          type="date"
+          {...register('due_date')}
+          className="input-field [color-scheme:dark]"
+        />
+        {errors.due_date && (
+          <p className="error-text">{errors.due_date.message}</p>
         )}
       </div>
 

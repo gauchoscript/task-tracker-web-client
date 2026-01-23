@@ -43,6 +43,11 @@ export const taskSchema = z.object({
   status: z
     .nativeEnum(TaskStatus)
     .optional(),
+  due_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format')
+    .optional()
+    .or(z.literal('')),
 });
 
 export type TaskFormData = z.infer<typeof taskSchema>;
