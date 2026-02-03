@@ -10,7 +10,11 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { queryClient } from '@/lib/queryClient';
 
+import { useNotifications } from './hooks/useNotifications';
+
 function App() {
+  useNotifications();
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
