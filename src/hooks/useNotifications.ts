@@ -1,7 +1,6 @@
-import { messaging } from '@/lib/firebase';
+import { getMessagingSafe } from '@/lib/firebase';
 import { notificationsApi } from '@/services/api';
 import { useAuthStore } from '@/stores/authStore';
-import { getToken, onMessage } from 'firebase/messaging';
 import { useCallback, useEffect } from 'react';
 
 export const useNotifications = () => {
@@ -19,12 +18,15 @@ export const useNotifications = () => {
     }
 
     try {
+      const messaging = await getMessagingSafe();
+      if (!messaging) return;
+
       const permission = await Notification.requestPermission();
 
       if (permission === 'granted') {
         const registration = await navigator.serviceWorker.ready;
 
-        const token = await getToken(messaging, {
+        const token = await messaging.getToken(messaging.instance, {
           vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
           serviceWorkerRegistration: registration,
         });
@@ -43,17 +45,32 @@ export const useNotifications = () => {
     if (isAuthenticated) {
       requestPermission();
 
-      const unsubscribe = onMessage(messaging, (payload) => {
-        console.log('Foreground message received:', payload);
-        if (payload.notification) {
-          new Notification(payload.notification.title || 'New Notification', {
-            body: payload.notification.body,
-            icon: '/pwa-192x192.png',
-          });
-        }
-      });
+      let unsubscribe: (() => void) | undefined;
 
-      return () => unsubscribe();
+      const setupOnMessage = async () => {
+        try {
+          const messaging = await getMessagingSafe();
+          if (messaging && messaging.onMessage) {
+            unsubscribe = messaging.onMessage(messaging.instance, (payload: any) => {
+              console.log('Foreground message received:', payload);
+              if (payload.notification) {
+                new Notification(payload.notification.title || 'New Notification', {
+                  body: payload.notification.body,
+                  icon: '/pwa-192x192.png',
+                });
+              }
+            });
+          }
+        } catch (error) {
+          console.error('FCM - Error setting up onMessage:', error);
+        }
+      };
+
+      setupOnMessage();
+
+      return () => {
+        if (unsubscribe) unsubscribe();
+      };
     }
   }, [isAuthenticated, requestPermission]);
 
