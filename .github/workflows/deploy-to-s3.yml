@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:  # Allows manual triggering from GitHub UI
 
+permissions:
+  id-token: write # Required for OIDC
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
