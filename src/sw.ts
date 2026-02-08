@@ -16,7 +16,7 @@ const setupBackgroundMessaging = async () => {
         const notificationTitle = payload.notification.title || 'New Notification';
         const notificationOptions = {
           body: payload.notification.body,
-          icon: '/pwa-192x192.png',
+          icon: 'pwa-192x192.png',
         };
 
         self.registration.showNotification(notificationTitle, notificationOptions);

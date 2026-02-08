@@ -36,6 +36,7 @@ jobs:
         run: npm run build
         env:
           CI: true
+          VITE_BASE_URL: ${{ secrets.BASE_URL }}
           VITE_API_URL: ${{ secrets.BACKEND_API_URL }}
           VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
