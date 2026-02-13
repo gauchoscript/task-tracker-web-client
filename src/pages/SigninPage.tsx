@@ -2,22 +2,43 @@ import { signinSchema, type SigninFormData } from '@/lib/schemas';
 import { ApiError, authApi } from '@/services/api';
 import { useAuthStore } from '@/stores/authStore';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export function SigninPage() {
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const signin = useAuthStore((state) => state.signin);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<SigninFormData>({
     resolver: zodResolver(signinSchema),
   });
+
+  useEffect(() => {
+    const state = location.state as { email?: string; password?: string; signupSuccess?: boolean } | null;
+    
+    if (state?.signupSuccess) {
+      setSuccess('Account created successfully! Please sign in to continue.');
+      
+      if (state.email && state.password) {
+        reset({
+          email: state.email,
+          password: state.password,
+        });
+      }
+      
+      // Clear location state to prevent message from reappearing on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, reset, navigate]);
 
   const onSubmit = async (data: SigninFormData) => {
     try {
@@ -43,6 +64,12 @@ export function SigninPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {success && (
+            <div className="p-3 bg-emerald-900/30 border border-emerald-700 rounded-lg">
+              <p className="text-emerald-400 text-sm">{success}</p>
+            </div>
+          )}
+
           {error && (
             <div className="p-3 bg-red-900/30 border border-red-700 rounded-lg">
               <p className="text-red-400 text-sm">{error}</p>

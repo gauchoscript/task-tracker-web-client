@@ -1,6 +1,5 @@
 import { signupSchema, type SignupFormData } from '@/lib/schemas';
 import { ApiError, authApi } from '@/services/api';
-import { useAuthStore } from '@/stores/authStore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -9,7 +8,6 @@ import { Link, useNavigate } from 'react-router-dom';
 export function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const signin = useAuthStore((state) => state.signin);
 
   const {
     register,
@@ -22,9 +20,14 @@ export function SignupPage() {
   const onSubmit = async (data: SignupFormData) => {
     try {
       setError(null);
-      const response = await authApi.signup(data);
-      signin(response.access_token);
-      navigate('/');
+      await authApi.signup(data);
+      navigate('/signin', { 
+        state: { 
+          email: data.email, 
+          password: data.password,
+          signupSuccess: true 
+        } 
+      });
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
