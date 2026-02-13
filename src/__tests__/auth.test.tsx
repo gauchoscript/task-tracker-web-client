@@ -15,39 +15,31 @@ describe('Authentication Flows', () => {
     expect(screen.getByRole('heading', { level: 1, name: /sign in/i })).toBeInTheDocument();
   });
 
-  it('allows user to sign up and redirects to signin', async () => {
-    // Signup redirects to '/' on success.
+  it('allows user to sign up and redirects to signin with success message', async () => {
     render(
       <Routes>
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/" element={<div>Home Page Reached</div>} />
+        <Route path="/signin" element={<SigninPage />} />
       </Routes>,
       { route: '/signup' }
     );
 
     const emailInput = screen.getByLabelText(/email/i);
-    // Adjust selector based on actual input labelling. Using placeholder or label text.
-    // If usage of react-hook-form resolvers with placeholders:
-    // screen.getByPlaceholderText(/email/i) might be needed if labels aren't properly associated.
-    // Ideally code is accessible.
+    const passwordInput = screen.getByLabelText(/^password/i);
     
-    // Assuming standard labels
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    
-    // Use getByLabelText with regex for robustness
-    const passwordInput = screen.getByLabelText(/^password/i); 
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    
-    // There is no confirm password field in the current signup form.
-    // const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
-    // fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
 
     const submitButton = screen.getByRole('button', { name: /sign up/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      // Signup redirects to Home ('/') after auto-login
-      expect(screen.getByText('Home Page Reached')).toBeInTheDocument();
+      // Should redirect to /signin and show success message
+      expect(screen.getByText(/account created successfully/i)).toBeInTheDocument();
+      
+      // Should also have the form pre-filled
+      expect(screen.getByLabelText(/email/i)).toHaveValue('test@example.com');
+      expect(screen.getByLabelText(/^password/i)).toHaveValue('password123');
     });
   });
 
