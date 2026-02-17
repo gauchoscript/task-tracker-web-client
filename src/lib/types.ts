@@ -5,6 +5,8 @@ export const TaskStatus = {
 
 export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
 
+export const MAX_POSITION = 2147483647; // Max 32-bit signed integer
+
 // User type
 export interface User {
   id: string;
@@ -19,6 +21,7 @@ export interface Task {
   description?: string;
   status: TaskStatus;
   due_date?: string;
+  position: number;
   user_id: string;
   created_at: string;
   updated_at: string;

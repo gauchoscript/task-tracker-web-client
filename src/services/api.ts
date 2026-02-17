@@ -105,6 +105,17 @@ export const tasksApi = {
       method: 'DELETE',
     });
   },
+
+  moveTask: async (
+    id: string,
+    above_id?: string,
+    below_id?: string
+  ): Promise<Task> => {
+    return fetchWithAuth<Task>(`/tasks/${id}/move`, {
+      method: 'PATCH',
+      body: JSON.stringify({ above_id, below_id }),
+    });
+  },
 };
 
 // Notifications API

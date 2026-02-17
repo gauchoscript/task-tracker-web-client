@@ -1,4 +1,4 @@
-import { TaskStatus, type CreateTaskRequest, type Task, type UpdateTaskRequest } from '@/lib/types';
+import { MAX_POSITION, TaskStatus, type CreateTaskRequest, type Task, type UpdateTaskRequest } from '@/lib/types';
 import { tasksApi } from '@/services/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -36,6 +36,7 @@ export function useCreateTaskMutation() {
           title: newTask.title,
           description: newTask.description,
           status: TaskStatus.TODO,
+          position: MAX_POSITION, // High number to ensure it appears first optimistically
           user_id: '',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -118,6 +119,64 @@ export function useDeleteTaskMutation() {
       return { previousTasks };
     },
     onError: (_err, _id, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(taskKeys.list(), context.previousTasks);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
+    },
+  });
+}
+// Move task mutation with optimistic update
+export function useMoveTaskMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      above_id,
+      below_id,
+    }: {
+      id: string;
+      above_id?: string;
+      below_id?: string;
+    }) => tasksApi.moveTask(id, above_id, below_id),
+    onMutate: async ({ id, above_id, below_id }) => {
+      await queryClient.cancelQueries({ queryKey: taskKeys.all });
+
+      const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.list());
+
+      if (previousTasks) {
+        const tasks = [...previousTasks];
+        const taskIndex = tasks.findIndex((t) => t.id === id);
+        if (taskIndex !== -1) {
+          const [movedTask] = tasks.splice(taskIndex, 1);
+
+          // Find new index using above_id or below_id
+          let newIndex = -1;
+          if (above_id) {
+            // above_id is visually above the target position, so place after it
+            newIndex = tasks.findIndex((t) => t.id === above_id);
+            if (newIndex !== -1) newIndex++;
+          } else if (below_id) {
+            // below_id is visually below the target position, so place at its current index
+            newIndex = tasks.findIndex((t) => t.id === below_id);
+          } else {
+            // Default to end of list
+            newIndex = tasks.length;
+          }
+
+          if (newIndex !== -1) {
+            tasks.splice(newIndex, 0, movedTask);
+            queryClient.setQueryData<Task[]>(taskKeys.list(), tasks);
+          }
+        }
+      }
+
+      return { previousTasks };
+    },
+    onError: (_err, _variables, context) => {
       if (context?.previousTasks) {
         queryClient.setQueryData(taskKeys.list(), context.previousTasks);
       }
