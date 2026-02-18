@@ -1,4 +1,4 @@
-# Tasflou | Task Tracking Reimagined
+# Tasflou | Task Tracking
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white) 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white) 
