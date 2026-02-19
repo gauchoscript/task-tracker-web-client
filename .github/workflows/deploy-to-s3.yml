@@ -68,4 +68,7 @@ jobs:
       #       --paths "/*"
 
       - name: Deployment complete
-        run: echo "Deployment to S3 completed successfully!"
+        run: |
+          echo "Deployment of ${{ github.sha }} to S3 completed successfully!"
+          curl -d "WEB | ✅ Deployment of ${{ github.sha }} to S3 completed successfully!" ${{ secrets.NTFY_DEPLOY_CHANNEL }}
+        
