@@ -1,6 +1,6 @@
 import { useDeleteTaskMutation } from '@/hooks/useTasks';
 import { formatDateForDisplay } from '@/lib/dateUtils';
-import type { Task } from '@/lib/types';
+import { TaskStatus, type Task } from '@/lib/types';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -21,6 +21,7 @@ export function TaskItem({ task, onEdit, isOverlay }: TaskItemProps) {
   } = useSortable({ id: task.id, disabled: !!isOverlay });
 
   const deleteMutation = useDeleteTaskMutation();
+  const isDone = task.status === TaskStatus.DONE;
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -50,14 +51,24 @@ export function TaskItem({ task, onEdit, isOverlay }: TaskItemProps) {
     <div
       ref={setNodeRef}
       style={isOverlay ? undefined : style}
-      className={`glass-card p-4 mb-3 ${isOverlay ? 'shadow-2xl ring-2 ring-blue-500/50 cursor-grabbing' : ''}`}
+      className={`glass-card p-4 mb-3 transition-all duration-200 ${
+        isOverlay ? 'shadow-2xl ring-2 ring-blue-500/50 cursor-grabbing' : ''
+      } ${
+        isDone 
+          ? 'border-green-500/30 bg-green-500/5 opacity-80' 
+          : 'hover:border-blue-500/30'
+      }`}
     >
       <div className="flex items-start gap-3">
         {/* Drag handle */}
         <div
           {...attributes}
           {...listeners}
-          className={`mt-1 p-1 text-slate-500 hover:text-white shrink-0 ${isOverlay ? 'cursor-grabbing' : 'cursor-grab active:cursor-grabbing'} touch-none`}
+          className={`mt-1 p-1 shrink-0 ${
+            isOverlay ? 'cursor-grabbing' : 'cursor-grab active:cursor-grabbing'
+          } touch-none transition-colors ${
+            isDone ? 'text-green-500/40 hover:text-green-400' : 'text-slate-500 hover:text-white'
+          }`}
           aria-label="Drag to reorder"
         >
           <svg
@@ -83,16 +94,22 @@ export function TaskItem({ task, onEdit, isOverlay }: TaskItemProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0" onClick={() => !isOverlay && onEdit(task)}>
-              <h3 className="text-base font-semibold text-white truncate">
+              <h3 className={`text-base font-semibold truncate transition-colors ${
+                isDone ? 'line-through text-green-400/70' : 'text-white'
+              }`}>
                 {task.title}
               </h3>
               {task.description && (
-                <p className="mt-1 text-sm text-slate-400 line-clamp-2">
+                <p className={`mt-1 text-sm line-clamp-2 transition-colors ${
+                  isDone ? 'text-green-500/40' : 'text-slate-400'
+                }`}>
                   {task.description}
                 </p>
               )}
               {task.due_date && (
-                <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
+                <div className={`mt-2 flex items-center gap-1.5 text-xs transition-colors ${
+                  isDone ? 'text-green-500/40' : 'text-slate-500'
+                }`}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="14"
@@ -117,7 +134,9 @@ export function TaskItem({ task, onEdit, isOverlay }: TaskItemProps) {
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => onEdit(task)}
-                  className="p-2 text-slate-400 hover:text-white transition-colors"
+                  className={`p-2 transition-colors ${
+                    isDone ? 'text-green-500/40 hover:text-green-400' : 'text-slate-400 hover:text-white'
+                  }`}
                   aria-label="Edit task"
                 >
                   <svg
@@ -138,7 +157,9 @@ export function TaskItem({ task, onEdit, isOverlay }: TaskItemProps) {
                 <button
                   onClick={handleDelete}
                   disabled={deleteMutation.isPending}
-                  className="p-2 text-slate-400 hover:text-red-400 transition-colors disabled:opacity-50"
+                  className={`p-2 transition-colors disabled:opacity-50 ${
+                    isDone ? 'text-green-500/40 hover:text-red-400' : 'text-slate-400 hover:text-red-400'
+                  }`}
                   aria-label="Delete task"
                 >
                   <svg
