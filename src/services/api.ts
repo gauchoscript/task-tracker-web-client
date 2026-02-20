@@ -1,10 +1,12 @@
 import type {
   AuthResponse,
   CreateTaskRequest,
+  PaginatedNotifications,
   SigninRequest,
   SignupRequest,
   Task,
-  UpdateTaskRequest,
+  TaskNotification,
+  UpdateTaskRequest
 } from '@/lib/types';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -126,4 +128,17 @@ export const notificationsApi = {
       body: JSON.stringify({ token, platform }),
     });
   },
+
+  getNotifications: async (skip = 0, limit = 20): Promise<PaginatedNotifications> => {
+    return fetchWithAuth<PaginatedNotifications>(
+      `/notifications/?skip=${skip}&limit=${limit}`
+    );
+  },
+
+  markAsRead: async (notificationId: string): Promise<TaskNotification> => {
+    return fetchWithAuth<TaskNotification>(`/notifications/${notificationId}/read`, {
+      method: 'PATCH',
+    });
+  },
 };
+

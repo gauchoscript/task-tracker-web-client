@@ -58,6 +58,22 @@ export interface UpdateTaskRequest {
   due_date?: string;
 }
 
+export interface TaskNotification {
+  id: string;
+  task_id: string | null;
+  title: string;
+  message: string;
+  read_at: string | null;
+  sent_at: string | null;
+}
+
+export interface PaginatedNotifications {
+  items: TaskNotification[];
+  total: number;
+  skip: number;
+  limit: number;
+}
+
 // API error response
 export interface ApiError {
   detail: string;

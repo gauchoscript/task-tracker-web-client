@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import { precacheAndRoute } from 'workbox-precaching';
+import { recordClickedNotification } from './lib/db';
 import { getMessagingSafe } from './lib/firebase';
 
 declare let self: ServiceWorkerGlobalScope;
@@ -10,13 +11,17 @@ precacheAndRoute(self.__WB_MANIFEST);
 const setupBackgroundMessaging = async () => {
   const messaging = await getMessagingSafe();
   if (messaging && messaging.onBackgroundMessage) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     messaging.onBackgroundMessage(messaging.instance, (payload: any) => {
       console.log('[sw.ts] Received background message ', payload);
       if (payload.notification) {
         const notificationTitle = payload.notification.title || 'New Notification';
         const notificationOptions = {
           body: payload.notification.body,
-          icon: 'pwa-192x192.png',
+          icon: '/pwa-192x192.png',
+          data: {
+            notification_id: payload.data?.notification_id,
+          },
         };
 
         self.registration.showNotification(notificationTitle, notificationOptions);
@@ -26,3 +31,27 @@ const setupBackgroundMessaging = async () => {
 };
 
 setupBackgroundMessaging();
+
+self.addEventListener('notificationclick', (event) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const notificationEvent = event as any;
+  const notification = notificationEvent.notification;
+  const notificationId = notification.data?.notification_id;
+
+  notificationEvent.notification.close();
+
+  if (notificationId) {
+    // Save to IndexedDB for the app to pick up
+    event.waitUntil(recordClickedNotification(notificationId));
+  }
+
+  // Focus or open the window
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      if (clientList.length > 0) {
+        return clientList[0].focus();
+      }
+      return self.clients.openWindow('/');
+    })
+  );
+});

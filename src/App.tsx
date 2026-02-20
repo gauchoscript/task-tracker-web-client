@@ -5,10 +5,8 @@ import { HomePage } from '@/pages/HomePage';
 import { NewTaskPage } from '@/pages/NewTaskPage';
 import { SigninPage } from '@/pages/SigninPage';
 import { SignupPage } from '@/pages/SignupPage';
-import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
-import { queryClient } from '@/lib/queryClient';
 
 import { useNotifications } from './hooks/useNotifications';
 
@@ -16,27 +14,25 @@ function App() {
   useNotifications();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/signin" element={<SigninPage />} />
-          <Route path="/signup" element={<SignupPage />} />
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/signin" element={<SigninPage />} />
+        <Route path="/signup" element={<SignupPage />} />
 
-          {/* Protected routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<Layout />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/tasks/new" element={<NewTaskPage />} />
-              <Route path="/tasks/:id/edit" element={<EditTaskPage />} />
-            </Route>
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/tasks/new" element={<NewTaskPage />} />
+            <Route path="/tasks/:id/edit" element={<EditTaskPage />} />
           </Route>
+        </Route>
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </QueryClientProvider>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
