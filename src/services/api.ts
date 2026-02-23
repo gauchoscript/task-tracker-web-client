@@ -84,16 +84,16 @@ async function handleTokenRefresh<T>(
   options: RequestInit,
   originalHeaders: HeadersInit
 ): Promise<T> {
-  const { signin, signout, refreshToken } = useAuthStore.getState();
+  const { signin, signout, refreshToken, user } = useAuthStore.getState();
 
-  if (!refreshToken) {
+  if (!refreshToken || !user?.email) {
     signout();
-    throw new ApiError(HttpStatus.UNAUTHORIZED, 'No refresh token available');
+    throw new ApiError(HttpStatus.UNAUTHORIZED, 'No refresh token or user email available');
   }
 
   try {
     if (!refreshPromise) {
-      refreshPromise = authApi.refresh(refreshToken);
+      refreshPromise = authApi.refresh(refreshToken, user.email);
     }
 
     const refreshResponse = await refreshPromise;
@@ -148,13 +148,13 @@ export const authApi = {
     });
   },
 
-  refresh: async (refreshToken: string): Promise<AuthResponse> => {
+  refresh: async (refreshToken: string, email: string): Promise<AuthResponse> => {
     const response = await fetch(`${API_URL}/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ refresh_token: refreshToken }),
+      body: JSON.stringify({ refresh_token: refreshToken, email }),
     });
 
     if (!response.ok) {
