@@ -12,6 +12,11 @@ import { useAuthStore } from '@/stores/authStore';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const HttpStatus = {
+  UNAUTHORIZED: 401,
+  NO_CONTENT: 204,
+} as const;
+
 // Custom error class for API errors
 export class ApiError extends Error {
   status: number;
@@ -23,12 +28,15 @@ export class ApiError extends Error {
   }
 }
 
+// Refresh promise to handle concurrent refresh requests
+let refreshPromise: Promise<AuthResponse> | null = null;
+
 // Fetch wrapper with auth and 401 handling
 async function fetchWithAuth<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = useAuthStore.getState().token;
+  const { token, refreshToken, signout } = useAuthStore.getState();
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -45,8 +53,12 @@ async function fetchWithAuth<T>(
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
-      useAuthStore.getState().signout();
+    if (response.status === HttpStatus.UNAUTHORIZED && refreshToken) {
+      return handleTokenRefresh<T>(endpoint, options, headers);
+    }
+
+    if (response.status === HttpStatus.UNAUTHORIZED) {
+      signout();
     }
 
     const error = await response.json().catch(() => ({
@@ -56,12 +68,68 @@ async function fetchWithAuth<T>(
     throw new ApiError(response.status, error.detail);
   }
 
-  // Handle 204 No Content
-  if (response.status === 204) {
+  // Handle No Content response
+  if (response.status === HttpStatus.NO_CONTENT) {
     return undefined as T;
   }
 
   return response.json();
+}
+
+/**
+ * Handles the token refresh flow and retries the original request.
+ */
+async function handleTokenRefresh<T>(
+  endpoint: string,
+  options: RequestInit,
+  originalHeaders: HeadersInit
+): Promise<T> {
+  const { signin, signout, refreshToken } = useAuthStore.getState();
+
+  if (!refreshToken) {
+    signout();
+    throw new ApiError(HttpStatus.UNAUTHORIZED, 'No refresh token available');
+  }
+
+  try {
+    if (!refreshPromise) {
+      refreshPromise = authApi.refresh(refreshToken);
+    }
+
+    const refreshResponse = await refreshPromise;
+    refreshPromise = null;
+
+    // Update store with new token
+    signin(refreshResponse.access_token, refreshResponse.refresh_token);
+
+    // Retry the original request with new token
+    const retryHeaders: HeadersInit = {
+      ...originalHeaders,
+      'Authorization': `Bearer ${refreshResponse.access_token}`,
+    };
+
+    const retryResponse = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers: retryHeaders,
+    });
+
+    if (!retryResponse.ok) {
+      const error = await retryResponse.json().catch(() => ({
+        detail: retryResponse.statusText || 'An error occurred',
+      }));
+      throw new ApiError(retryResponse.status, error.detail);
+    }
+
+    if (retryResponse.status === HttpStatus.NO_CONTENT) {
+      return undefined as T;
+    }
+
+    return retryResponse.json();
+  } catch (refreshErr) {
+    refreshPromise = null;
+    signout();
+    throw refreshErr;
+  }
 }
 
 // Auth API
@@ -78,6 +146,22 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  },
+
+  refresh: async (refreshToken: string): Promise<AuthResponse> => {
+    const response = await fetch(`${API_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+
+    if (!response.ok) {
+      throw new ApiError(response.status, 'Refresh failed');
+    }
+
+    return response.json();
   },
 };
 

@@ -5,9 +5,10 @@ import { persist } from 'zustand/middleware';
 
 interface AuthState {
   token: string | null;
+  refreshToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
-  signin: (token: string, user?: User) => void;
+  signin: (token: string, refreshToken?: string, user?: User) => void;
   signout: () => void;
   setUser: (user: User) => void;
 }
@@ -16,18 +17,21 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       token: null,
+      refreshToken: null,
       user: null,
       isAuthenticated: false,
-      signin: (token: string, user?: User) =>
-        set({
+      signin: (token: string, refreshToken?: string, user?: User) =>
+        set((state) => ({
           token,
-          user: user ?? null,
+          refreshToken: refreshToken ?? state.refreshToken,
+          user: user ?? state.user,
           isAuthenticated: true,
-        }),
+        })),
       signout: () => {
         queryClient.removeQueries();
         set({
           token: null,
+          refreshToken: null,
           user: null,
           isAuthenticated: false,
         });
@@ -38,6 +42,7 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
       partialize: (state) => ({
         token: state.token,
+        refreshToken: state.refreshToken,
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
