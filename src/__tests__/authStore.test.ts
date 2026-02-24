@@ -12,7 +12,7 @@ describe('authStore', () => {
   beforeEach(() => {
     useAuthStore.setState({
       token: 'test-token',
-      user: { id: '1', email: 'test@example.com' },
+      user: { email: 'test@example.com' },
       isAuthenticated: true,
     });
     vi.clearAllMocks();
@@ -25,5 +25,16 @@ describe('authStore', () => {
     expect(useAuthStore.getState().token).toBeNull();
     expect(useAuthStore.getState().user).toBeNull();
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
+  });
+
+  it('sets user info on signin', () => {
+    useAuthStore.getState().signout();
+
+    useAuthStore.getState().signin('new-token', 'refresh-token', { email: 'new@example.com' });
+
+    expect(useAuthStore.getState().token).toBe('new-token');
+    expect(useAuthStore.getState().refreshToken).toBe('refresh-token');
+    expect(useAuthStore.getState().user?.email).toBe('new@example.com');
+    expect(useAuthStore.getState().isAuthenticated).toBe(true);
   });
 });

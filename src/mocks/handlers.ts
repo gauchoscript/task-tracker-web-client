@@ -17,7 +17,15 @@ export const handlers = [
   }),
 
   http.post(`${apiUrl}/auth/signin`, () => {
-    return HttpResponse.json({ access_token: 'fake-token', token_type: 'bearer' }, { status: 200 })
+    return HttpResponse.json({ access_token: 'fake-token', refresh_token: 'fake-refresh', token_type: 'bearer' }, { status: 200 })
+  }),
+
+  http.post(`${apiUrl}/auth/refresh`, async ({ request }) => {
+    const { refresh_token, email } = await request.json() as any;
+    if (refresh_token === 'fake-refresh' && email) {
+      return HttpResponse.json({ access_token: 'new-fake-token', refresh_token: 'fake-refresh', token_type: 'bearer' }, { status: 200 })
+    }
+    return new HttpResponse(null, { status: 401 });
   }),
 
   // Tasks

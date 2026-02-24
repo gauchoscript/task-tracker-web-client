@@ -1,13 +1,18 @@
+import { http, HttpResponse } from 'msw';
 import { Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { server } from '../mocks/server';
+import { HomePage } from '../pages/HomePage';
 import { SigninPage } from '../pages/SigninPage';
 import { SignupPage } from '../pages/SignupPage';
 import { useAuthStore } from '../stores/authStore';
 import { fireEvent, render, screen, waitFor } from '../test-utils';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 describe('Authentication Flows', () => {
   beforeEach(() => {
-    useAuthStore.setState({ token: null, user: null });
+    useAuthStore.setState({ token: null, refreshToken: null, user: null, isAuthenticated: false });
   });
 
   it('renders signin page initially', () => {
@@ -63,6 +68,50 @@ describe('Authentication Flows', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Home Page Reached')).toBeInTheDocument();
+      const state = useAuthStore.getState();
+      expect(state.user?.email).toBe('test@example.com');
+      expect(state.refreshToken).toBe('fake-refresh');
     });
+  });
+
+  it('automatically refreshes token when a request fails with 401', async () => {
+    // 1. Setup authenticated state with a "stale" token
+    useAuthStore.setState({
+      token: 'stale-token',
+      refreshToken: 'fake-refresh',
+      user: { email: 'test@example.com' },
+      isAuthenticated: true
+    });
+
+    // 2. Mock 401 for the first request, then success
+    let failRequested = true;
+    server.use(
+      http.get(`${apiUrl}/tasks`, () => {
+        if (failRequested) {
+          failRequested = false;
+          return new HttpResponse(null, { status: 401 });
+        }
+        return HttpResponse.json([{
+          id: '1',
+          title: 'Refreshed Task',
+          status: 'todo',
+          position: 1000,
+          user_id: 'user-1',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }]);
+      })
+    );
+
+    render(<HomePage />);
+
+    // 3. Verify it eventually shows the data (after refresh and retry)
+    await waitFor(() => {
+      expect(screen.getByText('Refreshed Task')).toBeInTheDocument();
+    });
+
+    // 4. Verify store has new token
+    const state = useAuthStore.getState();
+    expect(state.token).toBe('new-fake-token');
   });
 });

@@ -10,7 +10,7 @@ import { fireEvent, render, screen, waitFor } from '../test-utils';
 describe('Task Management Flows', () => {
     beforeEach(() => {
         // Authenticate the user for task operations
-        useAuthStore.setState({ token: 'fake-token', user: { id: '1', email: 'test@example.com' } });
+        useAuthStore.setState({ token: 'fake-token', user: { email: 'test@example.com' } });
     });
 
     it('renders list of tasks', async () => {
