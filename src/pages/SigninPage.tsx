@@ -44,7 +44,7 @@ export function SigninPage() {
     try {
       setError(null);
       const response = await authApi.signin(data);
-      signin(response.access_token, response.refresh_token);
+      signin(response.access_token, response.refresh_token, { email: data.email });
       navigate('/');
     } catch (err) {
       if (err instanceof ApiError) {

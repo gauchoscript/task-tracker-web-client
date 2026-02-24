@@ -87,6 +87,7 @@ async function handleTokenRefresh<T>(
   const { signin, signout, refreshToken, user } = useAuthStore.getState();
 
   if (!refreshToken || !user?.email) {
+    console.error('Refresh token or user email missing:', { hasRefreshToken: !!refreshToken, hasEmail: !!user?.email });
     signout();
     throw new ApiError(HttpStatus.UNAUTHORIZED, 'No refresh token or user email available');
   }

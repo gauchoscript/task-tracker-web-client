@@ -9,7 +9,6 @@ export const MAX_POSITION = 2147483647; // Max 32-bit signed integer
 
 // User type
 export interface User {
-  id: string;
   email: string;
   full_name?: string;
 }
