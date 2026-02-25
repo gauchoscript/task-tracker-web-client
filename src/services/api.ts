@@ -216,7 +216,7 @@ export const notificationsApi = {
 
   getNotifications: async (skip = 0, limit = 20): Promise<PaginatedNotifications> => {
     return fetchWithAuth<PaginatedNotifications>(
-      `/notifications/?skip=${skip}&limit=${limit}`
+      `/notifications?skip=${skip}&limit=${limit}`
     );
   },
 
