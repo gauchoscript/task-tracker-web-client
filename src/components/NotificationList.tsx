@@ -42,7 +42,7 @@ export function NotificationList() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 max-h-[480px] overflow-hidden bg-navy-800 border border-navy-700 rounded-lg shadow-xl z-50 flex flex-col">
+        <div className="fixed left-4 right-4 mt-3 sm:absolute sm:left-auto sm:right-0 sm:w-80 max-h-[480px] overflow-hidden bg-navy-800 border border-navy-700 rounded-lg shadow-xl z-50 flex flex-col">
           <div className="p-3 border-b border-navy-700 flex items-center justify-between">
             <h3 className="font-semibold text-white">Notifications</h3>
             <span className="text-xs text-slate-400">{total} total</span>
