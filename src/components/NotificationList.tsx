@@ -28,7 +28,9 @@ export function NotificationList() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-slate-400 hover:text-white transition-colors rounded-full hover:bg-navy-800 hover:cursor-pointer"
+        className={`relative p-2 transition-colors rounded-full hover:bg-navy-800 hover:cursor-pointer ${
+          isOpen ? 'text-white bg-navy-800' : 'text-slate-400 hover:text-white'
+        }`}
         aria-label="Notifications"
       >
         <Bell size={20} />
@@ -40,7 +42,7 @@ export function NotificationList() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 max-h-[480px] overflow-hidden bg-navy-800 border border-navy-700 rounded-lg shadow-xl z-50 flex flex-col">
+        <div className="absolute right-0 mt-3 w-80 max-h-[480px] overflow-hidden bg-navy-800 border border-navy-700 rounded-lg shadow-xl z-50 flex flex-col">
           <div className="p-3 border-b border-navy-700 flex items-center justify-between">
             <h3 className="font-semibold text-white">Notifications</h3>
             <span className="text-xs text-slate-400">{total} total</span>
