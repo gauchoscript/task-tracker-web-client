@@ -1,33 +1,34 @@
 import { useMoveTaskMutation } from '@/hooks/useTasks';
 import type { Task } from '@/lib/types';
 import {
-  closestCenter,
-  DndContext,
-  DragOverlay,
-  KeyboardSensor,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
+    closestCenter,
+    DndContext,
+    DragOverlay,
+    KeyboardSensor,
+    PointerSensor,
+    TouchSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+    type DragStartEvent,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useState } from 'react';
 import { TaskItem } from './TaskItem';
 
 interface TaskListProps {
   tasks: Task[];
+  onView: (task: Task) => void;
   onEdit: (task: Task) => void;
   isLoading: boolean;
 }
 
-export function TaskList({ tasks, onEdit, isLoading }: TaskListProps) {
+export function TaskList({ tasks, onView, onEdit, isLoading }: TaskListProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const moveMutation = useMoveTaskMutation();
 
@@ -105,7 +106,7 @@ export function TaskList({ tasks, onEdit, isLoading }: TaskListProps) {
       <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
         <div className="min-h-[100px]">
           {tasks.map((task) => (
-            <TaskItem key={task.id} task={task} onEdit={onEdit} />
+            <TaskItem key={task.id} task={task} onView={onView} onEdit={onEdit} />
           ))}
         </div>
       </SortableContext>
@@ -114,6 +115,7 @@ export function TaskList({ tasks, onEdit, isLoading }: TaskListProps) {
         {activeTask ? (
           <TaskItem 
             task={activeTask} 
+            onView={onView}
             onEdit={onEdit} 
             isOverlay 
           />

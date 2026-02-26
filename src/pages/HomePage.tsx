@@ -11,6 +11,10 @@ export function HomePage() {
   const [filter, setFilter] = useState<FilterStatus>('all');
   const { data: tasks = [], isLoading } = useTasksQuery(filter === 'all' ? undefined : filter);
 
+  const handleView = (task: Task) => {
+    navigate(`/tasks/${task.id}`);
+  };
+
   const handleEdit = (task: Task) => {
     navigate(`/tasks/${task.id}/edit`);
   };
@@ -47,6 +51,7 @@ export function HomePage() {
       
       <TaskList
         tasks={tasks}
+        onView={handleView}
         onEdit={handleEdit}
         isLoading={isLoading}
       />

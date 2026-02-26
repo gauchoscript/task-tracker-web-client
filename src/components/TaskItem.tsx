@@ -6,11 +6,12 @@ import { CSS } from '@dnd-kit/utilities';
 
 interface TaskItemProps {
   task: Task;
+  onView: (task: Task) => void;
   onEdit: (task: Task) => void;
   isOverlay?: boolean;
 }
 
-export function TaskItem({ task, onEdit, isOverlay }: TaskItemProps) {
+export function TaskItem({ task, onView, onEdit, isOverlay }: TaskItemProps) {
   const {
     attributes,
     listeners,
@@ -93,7 +94,7 @@ export function TaskItem({ task, onEdit, isOverlay }: TaskItemProps) {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex-1 min-w-0" onClick={() => !isOverlay && onEdit(task)}>
+            <div className="flex-1 min-w-0 cursor-pointer" onClick={() => !isOverlay && onView(task)}>
               <h3 className={`text-base font-semibold truncate transition-colors ${
                 isDone ? 'line-through text-green-400/70' : 'text-white'
               }`}>
@@ -134,7 +135,7 @@ export function TaskItem({ task, onEdit, isOverlay }: TaskItemProps) {
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => onEdit(task)}
-                  className={`p-2 transition-colors ${
+                  className={`p-2 transition-colors cursor-pointer ${
                     isDone ? 'text-green-500/40 hover:text-green-400' : 'text-slate-400 hover:text-white'
                   }`}
                   aria-label="Edit task"
@@ -157,7 +158,7 @@ export function TaskItem({ task, onEdit, isOverlay }: TaskItemProps) {
                 <button
                   onClick={handleDelete}
                   disabled={deleteMutation.isPending}
-                  className={`p-2 transition-colors disabled:opacity-50 ${
+                  className={`p-2 transition-colors cursor-pointer disabled:opacity-50 ${
                     isDone ? 'text-green-500/40 hover:text-red-400' : 'text-slate-400 hover:text-red-400'
                   }`}
                   aria-label="Delete task"
