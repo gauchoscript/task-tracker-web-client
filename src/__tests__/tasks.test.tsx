@@ -4,6 +4,7 @@ import { TaskStatus } from '../lib/types';
 import { EditTaskPage } from '../pages/EditTaskPage';
 import { HomePage } from '../pages/HomePage';
 import { NewTaskPage } from '../pages/NewTaskPage';
+import { TaskDetailPage } from '../pages/TaskDetailPage';
 import { useAuthStore } from '../stores/authStore';
 import { fireEvent, render, screen, waitFor } from '../test-utils';
 
@@ -247,6 +248,53 @@ describe('Task Management Flows', () => {
         await waitFor(() => {
             expect(screen.getByText('Dated Task')).toBeInTheDocument();
             expect(screen.getByText(/April 1/i)).toBeInTheDocument();
+        });
+    });
+
+    it('navigates to task detail view and shows correct data', async () => {
+        render(
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/tasks/:id" element={<TaskDetailPage />} />
+            </Routes>
+        );
+
+        // Wait for tasks to load
+        await waitFor(() => {
+            expect(screen.getByText('Test Task 1')).toBeInTheDocument();
+        });
+
+        // Click on the task body to navigate to detail view
+        // Task body is the first min-w-0 div in TaskItem
+        const taskTitle = screen.getByText('Test Task 1');
+        fireEvent.click(taskTitle);
+
+        // Verify navigation to detail view
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { level: 1, name: /test task 1/i })).toBeInTheDocument();
+            expect(screen.getByText('Description 1')).toBeInTheDocument();
+            expect(screen.getByText('Back to List')).toBeInTheDocument();
+        });
+
+        // Test status toggle from detail view
+        const toggleButton = screen.getByLabelText(/mark as done/i);
+        fireEvent.click(toggleButton);
+
+        // Should now show as completed
+        await waitFor(() => {
+            expect(screen.getByText('done')).toBeInTheDocument();
+            expect(screen.queryByLabelText(/mark as done/i)).not.toBeInTheDocument();
+            expect(screen.getByLabelText(/mark as todo/i)).toBeInTheDocument();
+        });
+        
+        // Go back to list
+        const backButton = screen.getByText(/back to list/i);
+        fireEvent.click(backButton);
+
+        // Verify we are back on home and task is still Test Task 1
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { level: 2, name: /your tasks/i })).toBeInTheDocument();
+            expect(screen.getByText('Test Task 1')).toBeInTheDocument();
         });
     });
 });
