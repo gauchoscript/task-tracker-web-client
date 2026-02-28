@@ -143,42 +143,52 @@ export function useMoveTaskMutation() {
       below_id?: string;
     }) => tasksApi.moveTask(id, above_id, below_id),
     onMutate: async ({ id, above_id, below_id }) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({ queryKey: taskKeys.all });
 
-      const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.list());
+      // Snapshot the previous values for all tasks queries
+      const previousQueries = queryClient.getQueriesData<Task[]>({
+        queryKey: taskKeys.all,
+      });
 
-      if (previousTasks) {
-        const tasks = [...previousTasks];
+      // Optimistically update every task list in the cache
+      queryClient.setQueriesData<Task[]>({ queryKey: taskKeys.all }, (oldTasks) => {
+        if (!oldTasks) return oldTasks;
+
+        const tasks = [...oldTasks];
         const taskIndex = tasks.findIndex((t) => t.id === id);
+
+        // Only update if the moved task exists in this specific list
         if (taskIndex !== -1) {
           const [movedTask] = tasks.splice(taskIndex, 1);
 
           // Find new index using above_id or below_id
           let newIndex = -1;
           if (above_id) {
-            // above_id is visually above the target position, so place after it
             newIndex = tasks.findIndex((t) => t.id === above_id);
             if (newIndex !== -1) newIndex++;
           } else if (below_id) {
-            // below_id is visually below the target position, so place at its current index
             newIndex = tasks.findIndex((t) => t.id === below_id);
           } else {
-            // Default to end of list
             newIndex = tasks.length;
           }
 
           if (newIndex !== -1) {
             tasks.splice(newIndex, 0, movedTask);
-            queryClient.setQueryData<Task[]>(taskKeys.list(), tasks);
           }
         }
-      }
 
-      return { previousTasks };
+        return tasks;
+      });
+
+      return { previousQueries };
     },
     onError: (_err, _variables, context) => {
-      if (context?.previousTasks) {
-        queryClient.setQueryData(taskKeys.list(), context.previousTasks);
+      // Rollback to the previous state for all affected queries
+      if (context?.previousQueries) {
+        context.previousQueries.forEach(([queryKey, previousData]) => {
+          queryClient.setQueryData(queryKey, previousData);
+        });
       }
     },
     onSettled: () => {
