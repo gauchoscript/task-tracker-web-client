@@ -8,11 +8,7 @@ import { SignupPage } from '@/pages/SignupPage';
 import { TaskDetailPage } from '@/pages/TaskDetailPage';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
-
-import { useNotifications } from './hooks/useNotifications';
-
 function App() {
-  useNotifications();
 
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>

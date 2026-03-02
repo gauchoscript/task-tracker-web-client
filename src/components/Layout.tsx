@@ -1,7 +1,10 @@
+import { useFCM } from '@/hooks/useFCM';
 import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
 
 export function Layout() {
+  useFCM();
+
   return (
     <div className="min-h-full flex flex-col">
       <Header />
@@ -11,3 +14,4 @@ export function Layout() {
     </div>
   );
 }
+
