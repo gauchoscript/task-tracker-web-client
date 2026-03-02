@@ -207,10 +207,10 @@ export const tasksApi = {
 
 // Notifications API
 export const notificationsApi = {
-  registerDevice: async (token: string, read_source: string = 'web'): Promise<void> => {
+  registerDevice: async (token: string, platform: string = 'web'): Promise<void> => {
     return fetchWithAuth<void>('/notifications/devices', {
       method: 'POST',
-      body: JSON.stringify({ token, read_source }),
+      body: JSON.stringify({ token, platform }),
     });
   },
 
@@ -220,9 +220,10 @@ export const notificationsApi = {
     );
   },
 
-  markAsRead: async (notificationId: string): Promise<TaskNotification> => {
+  markAsRead: async (notificationId: string, read_source: string = 'web'): Promise<TaskNotification> => {
     return fetchWithAuth<TaskNotification>(`/notifications/${notificationId}/read`, {
       method: 'PATCH',
+      body: JSON.stringify({ read_source }),
     });
   },
 };
