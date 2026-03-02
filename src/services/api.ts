@@ -207,10 +207,10 @@ export const tasksApi = {
 
 // Notifications API
 export const notificationsApi = {
-  registerDevice: async (token: string, platform: string = 'web'): Promise<void> => {
+  registerDevice: async (token: string, read_source: string = 'web'): Promise<void> => {
     return fetchWithAuth<void>('/notifications/devices', {
       method: 'POST',
-      body: JSON.stringify({ token, platform }),
+      body: JSON.stringify({ token, read_source }),
     });
   },
 
