@@ -1,13 +1,14 @@
+import type { Task } from '@/lib/types';
 import { TaskStatus } from '@/lib/types';
 import { http, HttpResponse } from 'msw';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 // Initial tasks state
-let tasks = [
-  { id: '1', title: 'Test Task 1', description: 'Description 1', status: TaskStatus.TODO, due_date: '2026-12-31' },
-  { id: '2', title: 'Test Task 2', description: 'Description 2', status: TaskStatus.TODO },
-  { id: '3', title: 'Test Task 3', description: 'Description 3', status: TaskStatus.DONE },
+let tasks: Task[] = [
+  { id: '1', title: 'Test Task 1', description: 'Description 1', status: TaskStatus.TODO, due_date: '2026-12-31', position: 1, user_id: 'u1', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: '2', title: 'Test Task 2', description: 'Description 2', status: TaskStatus.TODO, position: 2, user_id: 'u1', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: '3', title: 'Test Task 3', description: 'Description 3', status: TaskStatus.DONE, position: 3, user_id: 'u1', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
 ];
 
 let notifications = [
@@ -40,7 +41,7 @@ export const handlers = [
   }),
 
   http.post(`${apiUrl}/auth/refresh`, async ({ request }) => {
-    const { refresh_token, email } = await request.json() as any;
+    const { refresh_token, email } = await request.json() as { refresh_token: string, email: string };
     if (refresh_token === 'fake-refresh' && email) {
       return HttpResponse.json({ access_token: 'new-fake-token', refresh_token: 'fake-refresh', token_type: 'bearer' }, { status: 200 })
     }
@@ -69,8 +70,14 @@ export const handlers = [
   }),
 
   http.post(`${apiUrl}/tasks`, async ({ request }) => {
-    const newTask = await request.json() as any;
-    const createdTask = {
+    const newTask = await request.json() as Partial<Task>;
+    const createdTask: Task = {
+      title: 'New Task',
+      description: '',
+      position: tasks.length + 1,
+      user_id: 'u1',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       ...newTask,
       id: 'new-task-id', // Deterministic ID for creation test
       status: TaskStatus.TODO
@@ -81,7 +88,7 @@ export const handlers = [
 
   http.patch(`${apiUrl}/tasks/:id`, async ({ params, request }) => {
     const { id } = params;
-    const updates = await request.json() as any;
+    const updates = await request.json() as Partial<Task>;
     const taskIndex = tasks.findIndex(t => t.id === id);
     if (taskIndex > -1) {
       tasks[taskIndex] = { ...tasks[taskIndex], ...updates };
@@ -124,9 +131,9 @@ export const handlers = [
 // Allow resetting state for tests
 export const resetMocks = () => {
   tasks = [
-    { id: '1', title: 'Test Task 1', description: 'Description 1', status: TaskStatus.TODO, due_date: '2026-12-31' },
-    { id: '2', title: 'Test Task 2', description: 'Description 2', status: TaskStatus.TODO },
-    { id: '3', title: 'Test Task 3', description: 'Description 3', status: TaskStatus.DONE },
+    { id: '1', title: 'Test Task 1', description: 'Description 1', status: TaskStatus.TODO, due_date: '2026-12-31', position: 1, user_id: 'u1', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: '2', title: 'Test Task 2', description: 'Description 2', status: TaskStatus.TODO, position: 2, user_id: 'u1', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: '3', title: 'Test Task 3', description: 'Description 3', status: TaskStatus.DONE, position: 3, user_id: 'u1', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   ];
 
   notifications = [

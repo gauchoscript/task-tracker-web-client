@@ -9,10 +9,24 @@ import './index.css'
 // Register service worker
 registerSW({ immediate: true })
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </StrictMode>,
-)
+async function enableMocking() {
+  if (import.meta.env.VITE_USE_MOCKS !== 'true') {
+    return
+  }
+
+  const { worker } = await import('./mocks/browser')
+
+  // `worker.start()` returns a Promise that resolves
+  // when the Service Worker is up and ready to intercept requests.
+  return worker.start()
+}
+
+enableMocking().then(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </StrictMode>,
+  )
+})
