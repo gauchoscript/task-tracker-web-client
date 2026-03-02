@@ -148,11 +148,11 @@ describe('Task Management Flows', () => {
      it('allows filtering tasks by status', async () => {
          render(<HomePage />);
          
-         // Wait for initial tasks to load
+         // Wait for initial tasks to load (default is now TODO)
          await waitFor(() => {
              expect(screen.getByText('Test Task 1')).toBeInTheDocument();
              expect(screen.getByText('Test Task 2')).toBeInTheDocument();
-             expect(screen.getByText('Test Task 3')).toBeInTheDocument();
+             expect(screen.queryByText('Test Task 3')).not.toBeInTheDocument();
          });
 
          // Verify filter buttons are present

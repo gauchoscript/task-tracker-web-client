@@ -4,12 +4,12 @@ import { type Task, TaskStatus } from '@/lib/types';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-type FilterStatus = 'all' | TaskStatus;
+type FilterStatus = TaskStatus | undefined;
 
 export function HomePage() {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<FilterStatus>('all');
-  const { data: tasks = [], isLoading } = useTasksQuery(filter === 'all' ? undefined : filter);
+  const [filter, setFilter] = useState<FilterStatus>(TaskStatus.TODO);
+  const { data: tasks = [], isLoading } = useTasksQuery(filter);
 
   const handleView = (task: Task) => {
     navigate(`/tasks/${task.id}`);
@@ -30,8 +30,8 @@ export function HomePage() {
       {/* Filter buttons */}
       <div className="flex gap-2 mb-4">
         <button
-          onClick={() => setFilter('all')}
-          className={`filter-tab ${filter === 'all' ? 'active' : ''}`}
+          onClick={() => setFilter(undefined)}
+          className={`filter-tab ${filter === undefined ? 'active' : ''}`}
         >
           All
         </button>
