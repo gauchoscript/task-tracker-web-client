@@ -10,6 +10,25 @@ let tasks = [
   { id: '3', title: 'Test Task 3', description: 'Description 3', status: TaskStatus.DONE },
 ];
 
+let notifications = [
+  {
+    id: 'n1',
+    task_id: '1',
+    title: 'Unread Notification',
+    message: 'This is an unread notification',
+    read_at: null,
+    sent_at: new Date().toISOString(),
+  },
+  {
+    id: 'n2',
+    task_id: '2',
+    title: 'Read Notification',
+    message: 'This is a read notification',
+    read_at: new Date().toISOString(),
+    sent_at: new Date().toISOString(),
+  },
+];
+
 export const handlers = [
   // Auth
   http.post(`${apiUrl}/auth/signup`, () => {
@@ -76,13 +95,56 @@ export const handlers = [
     tasks = tasks.filter(t => t.id !== id);
     return new HttpResponse(null, { status: 204 })
   }),
+
+  // Notifications
+  http.post(`${apiUrl}/notifications/devices`, () => {
+    return new HttpResponse(null, { status: 201 });
+  }),
+
+  http.get(`${apiUrl}/notifications`, () => {
+    return HttpResponse.json({
+      items: notifications,
+      total: notifications.length,
+      skip: 0,
+      limit: 20
+    });
+  }),
+
+  http.patch(`${apiUrl}/notifications/:id/read`, ({ params }) => {
+    const { id } = params;
+    const index = notifications.findIndex(n => n.id === id);
+    if (index > -1) {
+      notifications[index] = { ...notifications[index], read_at: new Date().toISOString() };
+      return HttpResponse.json(notifications[index], { status: 200 });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
 ]
 
-// Allow resetting tasks for tests if needed
-export const resetTasks = () => {
+// Allow resetting state for tests
+export const resetMocks = () => {
   tasks = [
     { id: '1', title: 'Test Task 1', description: 'Description 1', status: TaskStatus.TODO, due_date: '2026-12-31' },
     { id: '2', title: 'Test Task 2', description: 'Description 2', status: TaskStatus.TODO },
     { id: '3', title: 'Test Task 3', description: 'Description 3', status: TaskStatus.DONE },
+  ];
+
+  notifications = [
+    {
+      id: 'n1',
+      task_id: '1',
+      title: 'Unread Notification',
+      message: 'This is an unread notification',
+      read_at: null,
+      sent_at: new Date().toISOString(),
+    },
+    {
+      id: 'n2',
+      task_id: '2',
+      title: 'Read Notification',
+      message: 'This is a read notification',
+      read_at: new Date().toISOString(),
+      sent_at: new Date().toISOString(),
+    },
   ];
 }
