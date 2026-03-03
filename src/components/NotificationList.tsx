@@ -77,22 +77,27 @@ export function NotificationList() {
                       key={notification.id}
                       data-testid={`notification-item-${notification.id}`}
                       onClick={() => handleNotificationClick(notification.id, notification.task_id, isRead)}
-                      className={`p-4 transition-all duration-200 cursor-pointer relative group flex items-start gap-3 ${
+                      className={`p-4 pr-5 transition-all duration-200 cursor-pointer group flex items-start gap-2 ${
                         !isRead ? 'bg-indigo-500/5 hover:bg-indigo-500/10' : 'hover:bg-navy-700/50'
                       }`}
                     >
-                      {!isRead && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            markAsRead(notification.id);
-                          }}
-                          className="absolute left-1.5 top-5 w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)] hover:scale-125 transition-transform z-10"
-                          title="Mark as read"
-                          aria-label="Mark as read"
-                          data-testid={`notification-dot-${notification.id}`}
-                        />
-                      )}
+                      {/* Unread Indicator Dot / Button */}
+                      <div className="flex-shrink-0 w-6 h-5 flex items-center justify-center -ml-1">
+                        {!isRead && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markAsRead(notification.id);
+                            }}
+                            className="w-6 h-6 flex items-center justify-center rounded-full hover:cursor-pointer hover:bg-indigo-500/10 active:bg-indigo-500/20 transition-all -m-2 group/dot"
+                            title="Mark as read"
+                            aria-label="Mark as read"
+                            data-testid={`notification-dot-${notification.id}`}
+                          >
+                            <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)] group-hover/dot:scale-125 transition-all" />
+                          </button>
+                        )}
+                      </div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start gap-2 mb-1">
