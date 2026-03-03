@@ -220,7 +220,7 @@ export const notificationsApi = {
     );
   },
 
-  markAsRead: async (notificationId: string, read_source: string = 'web'): Promise<TaskNotification> => {
+  markAsRead: async (notificationId: string, read_source: string): Promise<TaskNotification> => {
     return fetchWithAuth<TaskNotification>(`/notifications/${notificationId}/read`, {
       method: 'PATCH',
       body: JSON.stringify({ read_source }),

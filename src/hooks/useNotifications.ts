@@ -36,7 +36,8 @@ export const useNotifications = () => {
     [notifications]);
 
   const markAsReadMutation = useMutation({
-    mutationFn: (id: string) => notificationsApi.markAsRead(id),
+    mutationFn: ({ id, read_source = 'web_client' }: { id: string; read_source?: string }) =>
+      notificationsApi.markAsRead(id, read_source),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
@@ -51,7 +52,7 @@ export const useNotifications = () => {
           if (pendingIds.length > 0) {
             console.log('Processing items from storage:', pendingIds);
             for (const id of pendingIds) {
-              await markAsReadMutation.mutateAsync(id);
+              await markAsReadMutation.mutateAsync({ id, read_source: 'web_push' });
             }
           }
         } catch (error) {
@@ -69,7 +70,7 @@ export const useNotifications = () => {
     unreadCount,
     hasNextPage,
     fetchNextPage,
-    markAsRead: markAsReadMutation.mutate,
+    markAsRead: (id: string, read_source?: string) => markAsReadMutation.mutate({ id, read_source }),
   };
 };
 

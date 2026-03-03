@@ -55,7 +55,7 @@ describe('Notification List', () => {
         // Verify navigation and markAsRead
         await waitFor(() => {
             expect(mockNavigate).toHaveBeenCalledWith('/tasks/1');
-            expect(markAsReadSpy).toHaveBeenCalledWith('n1');
+            expect(markAsReadSpy).toHaveBeenCalledWith('n1', 'web_client');
         });
 
         // Verify dropdown is closed
@@ -115,7 +115,7 @@ describe('Notification List', () => {
 
         // Verify markAsRead was called
         await waitFor(() => {
-            expect(markAsReadSpy).toHaveBeenCalledWith('n1');
+            expect(markAsReadSpy).toHaveBeenCalledWith('n1', 'web_client');
         });
 
         // Verify navigation was NOT called
