@@ -71,6 +71,7 @@ export interface TaskNotification {
 export interface PaginatedNotifications {
   items: TaskNotification[];
   total: number;
+  unread: number;
   skip: number;
   limit: number;
 }

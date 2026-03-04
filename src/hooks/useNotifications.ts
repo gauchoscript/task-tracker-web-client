@@ -30,10 +30,7 @@ export const useNotifications = () => {
     [data]);
 
   const total = data?.pages[0]?.total ?? 0;
-
-  const unreadCount = useMemo(() =>
-    notifications.filter((n) => !n.read_at).length,
-    [notifications]);
+  const unreadCount = data?.pages[0]?.unread ?? 0;
 
   const markAsReadMutation = useMutation({
     mutationFn: ({ id, read_source = 'web_client' }: { id: string; read_source?: string }) =>
