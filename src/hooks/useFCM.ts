@@ -1,6 +1,7 @@
-import { getMessagingSafe } from '@/lib/firebase';
+import { app } from '@/lib/firebase';
 import { notificationsApi } from '@/services/api';
 import { useQueryClient } from '@tanstack/react-query';
+import { getMessaging, getToken, isSupported, onMessage } from 'firebase/messaging';
 import { useCallback, useEffect, useRef } from 'react';
 
 // Module-level set to track tokens registered in the current session
@@ -22,15 +23,15 @@ export const useFCM = () => {
     }
 
     try {
-      const messaging = await getMessagingSafe();
-      if (!messaging) return;
+      if (!(await isSupported())) return;
+      const messaging = getMessaging(app);
 
       const permission = await Notification.requestPermission();
 
       if (permission === 'granted') {
         const registration = await navigator.serviceWorker.ready;
 
-        const token = await messaging.getToken(messaging.instance, {
+        const token = await getToken(messaging, {
           vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
           serviceWorkerRegistration: registration,
         });
@@ -60,25 +61,27 @@ export const useFCM = () => {
 
     const setupOnMessage = async () => {
       try {
-        const messaging = await getMessagingSafe();
-        if (messaging && messaging.onMessage) {
-          unsubscribe = messaging.onMessage(messaging.instance, (payload: any) => {
-            console.log('Foreground message received:', payload);
-            // Invalidate notifications query when a new message arrives
-            queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        if (!(await isSupported())) return;
+        const messaging = getMessaging(app);
 
-            if (payload.notification) {
-              new Notification(payload.notification.title || 'New Notification', {
-                body: payload.notification.body,
-                icon: '/pwa-192x192.png',
-              });
-            }
-          });
-        }
+        unsubscribe = onMessage(messaging, (payload: any) => {
+          console.log('Foreground message received:', payload);
+          // Invalidate notifications query when a new message arrives
+          queryClient.invalidateQueries({ queryKey: ['notifications'] });
+
+          if (payload.notification) {
+            new Notification(payload.notification.title || 'New Notification', {
+              body: payload.notification.body,
+              icon: '/pwa-192x192.png',
+            });
+          }
+        });
       } catch (error) {
         console.error('FCM - Error setting up onMessage:', error);
       }
     };
+
+    console.log('FCM - Setting up onMessage');
 
     setupOnMessage();
 

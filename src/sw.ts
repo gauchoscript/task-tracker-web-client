@@ -1,8 +1,9 @@
 /// <reference lib="webworker" />
+import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw';
 import { clientsClaim } from 'workbox-core';
 import { precacheAndRoute } from 'workbox-precaching';
 import { recordClickedNotification } from './lib/db';
-import { getMessagingSafe } from './lib/firebase';
+import { app } from './lib/firebase';
 
 declare let self: ServiceWorkerGlobalScope;
 
@@ -15,37 +16,30 @@ self.skipWaiting();
 // Ensure that any open clients are controlled by the new service worker immediately.
 clientsClaim();
 
-const setupBackgroundMessaging = async () => {
-  const messaging = await getMessagingSafe();
-  if (messaging && messaging.onBackgroundMessage) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    messaging.onBackgroundMessage(messaging.instance, (payload: any) => {
-      console.log('[sw.ts] Received background message ', payload);
-      if (payload.notification) {
-        const notificationTitle = payload.notification.title || 'New Notification';
-        const notificationOptions = {
-          body: payload.notification.body,
-          icon: '/pwa-192x192.png',
-          data: {
-            notification_id: payload.data?.notification_id,
-          },
-        };
+// Initialize Messaging synchronously at the top level
+const messaging = getMessaging(app);
 
-        self.registration.showNotification(notificationTitle, notificationOptions);
-      }
-    });
+onBackgroundMessage(messaging, (payload) => {
+  console.log('[sw.ts] Received background message ', payload);
+  if (payload.notification) {
+    const notificationTitle = payload.notification.title || 'New Notification';
+    const notificationOptions = {
+      body: payload.notification.body,
+      icon: '/pwa-192x192.png',
+      data: {
+        notification_id: payload.data?.notification_id,
+      },
+    };
+
+    self.registration.showNotification(notificationTitle, notificationOptions);
   }
-};
-
-setupBackgroundMessaging();
+});
 
 self.addEventListener('notificationclick', (event) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const notificationEvent = event as any;
-  const notification = notificationEvent.notification;
+  const notification = event.notification;
   const notificationId = notification.data?.notification_id;
 
-  notificationEvent.notification.close();
+  notification.close();
 
   if (notificationId) {
     // Save to IndexedDB for the app to pick up
