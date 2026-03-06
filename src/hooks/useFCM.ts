@@ -36,13 +36,20 @@ export const useFCM = () => {
           serviceWorkerRegistration: registration,
         });
 
+        console.log('FCM Token retrieved:', token ? 'YES' : 'NO');
+        if (token) {
+          console.log('FAPID Key used:', import.meta.env.VITE_FIREBASE_VAPID_KEY);
+        }
+
         if (token && !registeredTokens.has(token) && !isRegistering.current) {
           isRegistering.current = true;
           try {
-            console.log('FCM Token retrieved successfully, registering...');
+            console.log('FCM Token retrieved successfully, registering to backend...');
             await notificationsApi.registerDevice(token, 'web');
             registeredTokens.add(token);
-            console.log('FCM Token registered successfully');
+            console.log('FCM Token registered successfully in backend');
+          } catch (regError) {
+            console.error('FCM - Error registering token in backend:', regError);
           } finally {
             isRegistering.current = false;
           }

@@ -17,10 +17,11 @@ self.skipWaiting();
 clientsClaim();
 
 // Initialize Messaging synchronously at the top level
+console.log('[sw.ts] Initializing messaging with app:', app.options.projectId);
 const messaging = getMessaging(app);
 
 onBackgroundMessage(messaging, (payload) => {
-  console.log('[sw.ts] Received background message ', payload);
+  console.log('[sw.ts] Received background message (onBackgroundMessage):', payload);
   if (payload.notification) {
     const notificationTitle = payload.notification.title || 'New Notification';
     const notificationOptions = {
@@ -31,7 +32,27 @@ onBackgroundMessage(messaging, (payload) => {
       },
     };
 
+    console.log('[sw.ts] Showing notification via onBackgroundMessage:', notificationTitle);
     self.registration.showNotification(notificationTitle, notificationOptions);
+  }
+});
+
+// Fallback manual push event handler for debugging
+self.addEventListener('push', (event) => {
+  console.log('[sw.ts] Manual push event received:', event);
+
+  if (event.data) {
+    try {
+      const payload = event.data.json();
+      console.log('[sw.ts] Push event data (JSON):', payload);
+
+      // If the SDK didn't handle it (or we want to be sure), we can show it here
+      // But usually we just want to log that it arrived.
+    } catch (e) {
+      console.log('[sw.ts] Push event data (Text):', event.data.text());
+    }
+  } else {
+    console.log('[sw.ts] Push event received but no data.');
   }
 });
 
