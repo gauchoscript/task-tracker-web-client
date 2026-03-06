@@ -23,13 +23,19 @@ export default defineConfig(({ mode }) => {
           enabled: true,
           type: 'module',
         },
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+        includeAssets: ['apple-touch-icon.png', 'tasflou-icon.svg'],
         manifest: {
           name: 'Tasflou',
           short_name: 'Tasflou',
           description: 'Modern and elegant task tracker to never forgot your pendings again.',
           theme_color: '#0f172a',
           icons: [
+            {
+              src: 'tasflou-icon.svg',
+              sizes: 'any',
+              type: 'image/svg+xml',
+              purpose: 'any'
+            },
             {
               src: 'pwa-192x192.png',
               sizes: '192x192',
