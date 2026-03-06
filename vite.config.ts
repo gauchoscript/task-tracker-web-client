@@ -29,6 +29,7 @@ export default defineConfig(({ mode }) => {
           short_name: 'Tasflou',
           description: 'Modern and elegant task tracker to never forgot your pendings again.',
           theme_color: '#0f172a',
+          background_color: '#0f172a',
           icons: [
             {
               src: 'tasflou-icon.svg',
