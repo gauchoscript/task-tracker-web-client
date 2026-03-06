@@ -38,7 +38,8 @@ export const useFCM = () => {
 
         console.log('FCM Token retrieved:', token ? 'YES' : 'NO');
         if (token) {
-          console.log('FAPID Key used:', import.meta.env.VITE_FIREBASE_VAPID_KEY);
+          console.log('FCM Token Value:', token);
+          console.log('VAPID Key used:', import.meta.env.VITE_FIREBASE_VAPID_KEY);
         }
 
         if (token && !registeredTokens.has(token) && !isRegistering.current) {
