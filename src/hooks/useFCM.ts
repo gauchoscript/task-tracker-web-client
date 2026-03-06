@@ -12,21 +12,31 @@ export const useFCM = () => {
   const isRegistering = useRef(false);
 
   const requestPermission = useCallback(async () => {
+    console.log('FCM - requestPermission called');
     if (!('Notification' in window)) {
-      console.warn('This browser does not support notifications');
+      console.warn('FCM - This browser does not support notifications');
       return;
     }
 
     if (!window.isSecureContext) {
-      console.error('Notifications require a secure context (HTTPS or localhost)');
+      console.error('FCM - Notifications require a secure context (HTTPS or localhost). Current origin:', window.location.origin);
       return;
     }
 
     try {
-      if (!(await isSupported())) return;
+      console.log('FCM - Checking isSupported...');
+      const supported = await isSupported();
+      console.log('FCM - isSupported result:', supported);
+      if (!supported) {
+        console.warn('FCM - isSupported returned false');
+        return;
+      }
       const messaging = getMessaging(app);
+      console.log('FCM - Messaging SDK initialized');
 
+      console.log('FCM - Current permission status:', Notification.permission);
       const permission = await Notification.requestPermission();
+      console.log('FCM - Permission request result:', permission);
 
       if (permission === 'granted') {
         const registration = await navigator.serviceWorker.ready;
