@@ -14,12 +14,12 @@ export const useFCM = () => {
   const requestPermission = useCallback(async () => {
     console.log('FCM - requestPermission called');
     if (!('Notification' in window)) {
-      console.warn('FCM - This browser does not support notifications');
+      console.warn('This browser does not support notifications');
       return;
     }
 
     if (!window.isSecureContext) {
-      console.error('FCM - Notifications require a secure context (HTTPS or localhost). Current origin:', window.location.origin);
+      console.error('Notifications require a secure context (HTTPS or localhost)');
       return;
     }
 
@@ -39,31 +39,37 @@ export const useFCM = () => {
       console.log('FCM - Permission request result:', permission);
 
       if (permission === 'granted') {
+        console.log('FCM - Permission granted, getting SW registration...');
         const registration = await navigator.serviceWorker.ready;
+        console.log('FCM - SW registration ready:', registration.scope);
 
-        const token = await getToken(messaging, {
-          vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-          serviceWorkerRegistration: registration,
-        });
-
-        console.log('FCM Token retrieved:', token ? 'YES' : 'NO');
-        if (token) {
-          console.log('FCM Token Value:', token);
-          console.log('VAPID Key used:', import.meta.env.VITE_FIREBASE_VAPID_KEY);
-        }
-
-        if (token && !registeredTokens.has(token) && !isRegistering.current) {
-          isRegistering.current = true;
-          try {
-            console.log('FCM Token retrieved successfully, registering to backend...');
-            await notificationsApi.registerDevice(token, 'web');
-            registeredTokens.add(token);
-            console.log('FCM Token registered successfully in backend');
-          } catch (regError) {
-            console.error('FCM - Error registering token in backend:', regError);
-          } finally {
-            isRegistering.current = false;
+        console.log('FCM - Calling getToken...');
+        try {
+          const token = await getToken(messaging, {
+            vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+            serviceWorkerRegistration: registration,
+          });
+          console.log('FCM Token retrieved:', token ? 'YES' : 'NO');
+          if (token) {
+            console.log('FCM Token Value:', token);
+            console.log('VAPID Key used:', import.meta.env.VITE_FIREBASE_VAPID_KEY);
           }
+          if (token && !registeredTokens.has(token) && !isRegistering.current) {
+            isRegistering.current = true;
+            try {
+              console.log('FCM - Registering token to backend...');
+              await notificationsApi.registerDevice(token, 'web');
+              registeredTokens.add(token);
+              console.log('FCM - Registered successfully in backend');
+            } catch (regError) {
+              console.error('FCM - Backend registration error:', regError);
+            } finally {
+              isRegistering.current = false;
+            }
+          }
+        } catch (tokenError) {
+          console.error('FCM - Error in getToken call:', tokenError);
+          throw tokenError;
         }
       }
     } catch (error) {
