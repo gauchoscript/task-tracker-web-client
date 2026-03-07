@@ -33,7 +33,7 @@ export const useFCM = () => {
         alert('FCM: Permission granted. Searching for Service Worker...');
 
         const getActiveRegistration = async (): Promise<ServiceWorkerRegistration | null> => {
-          const scope = import.meta.env.BASE_URL;
+          const scope = import.meta.env.VITE_BASE_URL || '/';
           alert(`FCM: Looking for SW at scope: ${scope}`);
 
           for (let i = 0; i < 60; i++) {
@@ -72,7 +72,7 @@ export const useFCM = () => {
 
         if (!registration) {
           const regs = await navigator.serviceWorker.getRegistrations();
-          alert(`FCM: Failed! Regs found: ${regs.length}.`);
+          alert(`FCM: Failed! Regs found: ${regs.length}. First state: ${regs[0]?.active ? 'active' : 'not active'}`);
           return;
         }
 
