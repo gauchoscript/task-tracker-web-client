@@ -7,15 +7,7 @@ import App from './App.tsx'
 import './index.css'
 
 // Register service worker
-registerSW({ 
-  immediate: true,
-  onRegistered(r) {
-    console.log('PWA - Service Worker registered:', r?.scope);
-  },
-  onRegisterError(error) {
-    console.error('PWA - Service Worker registration error:', error);
-  }
-})
+registerSW({ immediate: true })
 
 async function enableMocking() {
   if (import.meta.env.VITE_USE_MOCKS !== 'true') {

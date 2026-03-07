@@ -24,52 +24,32 @@ export const useFCM = () => {
     }
 
     try {
-      console.log('FCM - Checking isSupported...');
-      const supported = await isSupported();
-      console.log('FCM - isSupported result:', supported);
-      if (!supported) {
-        console.warn('FCM - isSupported returned false');
-        return;
-      }
+      if (!(await isSupported())) return;
       const messaging = getMessaging(app);
-      console.log('FCM - Messaging SDK initialized');
 
-      console.log('FCM - Current permission status:', Notification.permission);
       const permission = await Notification.requestPermission();
-      console.log('FCM - Permission request result:', permission);
 
       if (permission === 'granted') {
-        console.log('FCM - Permission granted, getting SW registration...');
-        const registration = await navigator.serviceWorker.ready;
-        console.log('FCM - SW registration ready:', registration.scope);
+        // Use getRegistration() for better reliability
+        let registration = await navigator.serviceWorker.getRegistration();
+        if (!registration) {
+          registration = await navigator.serviceWorker.ready;
+        }
 
-        console.log('FCM - Calling getToken...');
-        try {
-          const token = await getToken(messaging, {
-            vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-            serviceWorkerRegistration: registration,
-          });
-          console.log('FCM Token retrieved:', token ? 'YES' : 'NO');
-          if (token) {
-            console.log('FCM Token Value:', token);
-            console.log('VAPID Key used:', import.meta.env.VITE_FIREBASE_VAPID_KEY);
+        const token = await getToken(messaging, {
+          vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+          serviceWorkerRegistration: registration,
+        });
+
+        if (token && !registeredTokens.has(token) && !isRegistering.current) {
+          isRegistering.current = true;
+          try {
+            await notificationsApi.registerDevice(token, 'web');
+            registeredTokens.add(token);
+            console.log('FCM Token registered successfully');
+          } finally {
+            isRegistering.current = false;
           }
-          if (token && !registeredTokens.has(token) && !isRegistering.current) {
-            isRegistering.current = true;
-            try {
-              console.log('FCM - Registering token to backend...');
-              await notificationsApi.registerDevice(token, 'web');
-              registeredTokens.add(token);
-              console.log('FCM - Registered successfully in backend');
-            } catch (regError) {
-              console.error('FCM - Backend registration error:', regError);
-            } finally {
-              isRegistering.current = false;
-            }
-          }
-        } catch (tokenError) {
-          console.error('FCM - Error in getToken call:', tokenError);
-          throw tokenError;
         }
       }
     } catch (error) {
