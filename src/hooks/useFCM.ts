@@ -32,22 +32,41 @@ export const useFCM = () => {
       if (permission === 'granted') {
         alert('FCM: Permission granted');
 
-        // Try to get existing registration first, as it might be available even if 'ready' is hanging
-        let registration = await navigator.serviceWorker.getRegistration();
+        // Helper to get active registration
+        const getActiveRegistration = async (): Promise<ServiceWorkerRegistration | null> => {
+          for (let i = 0; i < 10; i++) { // Try for 5 seconds
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (reg) {
+              if (reg.active) return reg;
 
-        if (registration) {
-          alert(`FCM: Found registration! State: ${registration.active ? 'active' : registration.waiting ? 'waiting' : 'installing'}`);
-        } else {
-          alert('FCM: No registration found yet, waiting for ready...');
-          registration = await navigator.serviceWorker.ready;
-          alert('FCM: Service worker ready now');
-        }
+              // If we have an installing or waiting worker, wait for it to activate
+              const worker = reg.installing || reg.waiting;
+              if (worker) {
+                alert(`FCM: Worker found in state: ${worker.state}. Waiting for activation...`);
+                await new Promise<void>((resolve) => {
+                  worker.addEventListener('statechange', () => {
+                    if (worker.state === 'activated') resolve();
+                  });
+                  // Safety timeout for the state change
+                  setTimeout(resolve, 2000);
+                });
+                if (reg.active) return reg;
+              }
+            }
+            alert(`FCM: No active registration yet (attempt ${i + 1}/10), retrying in 500ms...`);
+            await new Promise(r => setTimeout(r, 500));
+          }
+          return null;
+        };
+
+        const registration = await getActiveRegistration();
 
         if (!registration) {
-          alert('FCM: Failed to get service worker registration');
+          alert('FCM: Failed to get active service worker registration after polling');
           return;
         }
 
+        alert('FCM: Active registration found, getting token...');
         const token = await getToken(messaging, {
           vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
           serviceWorkerRegistration: registration,
