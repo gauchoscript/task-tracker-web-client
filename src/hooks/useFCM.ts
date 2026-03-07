@@ -30,30 +30,37 @@ export const useFCM = () => {
       const permission = await Notification.requestPermission();
 
       if (permission === 'granted') {
-        alert('FCM: Permission granted');
+        alert('FCM: Permission granted. Searching for Service Worker...');
 
-        // Helper to get active registration
         const getActiveRegistration = async (): Promise<ServiceWorkerRegistration | null> => {
-          for (let i = 0; i < 10; i++) { // Try for 5 seconds
+          // Try for up to 30 seconds (60 * 500ms)
+          for (let i = 0; i < 60; i++) {
             const reg = await navigator.serviceWorker.getRegistration();
             if (reg) {
               if (reg.active) return reg;
 
-              // If we have an installing or waiting worker, wait for it to activate
               const worker = reg.installing || reg.waiting;
               if (worker) {
-                alert(`FCM: Worker found in state: ${worker.state}. Waiting for activation...`);
+                console.log(`FCM: Worker state: ${worker.state}`);
+                if (worker.state === 'activated') return reg;
+
+                // Wait for state change if it's currently installing or waiting
                 await new Promise<void>((resolve) => {
-                  worker.addEventListener('statechange', () => {
-                    if (worker.state === 'activated') resolve();
-                  });
-                  // Safety timeout for the state change
+                  const stateChangeHandler = () => {
+                    if (worker.state === 'activated' || worker.state === 'redundant') {
+                      worker.removeEventListener('statechange', stateChangeHandler);
+                      resolve();
+                    }
+                  };
+                  worker.addEventListener('statechange', stateChangeHandler);
                   setTimeout(resolve, 2000);
                 });
                 if (reg.active) return reg;
               }
             }
-            alert(`FCM: No active registration yet (attempt ${i + 1}/10), retrying in 500ms...`);
+            if (i % 5 === 0) { // Alert every 2.5 seconds to avoid spamming but keep user informed
+              alert(`FCM: Waiting for SW (attempt ${i + 1}/60)...`);
+            }
             await new Promise(r => setTimeout(r, 500));
           }
           return null;
@@ -62,21 +69,21 @@ export const useFCM = () => {
         const registration = await getActiveRegistration();
 
         if (!registration) {
-          alert('FCM: Failed to get active service worker registration after polling');
+          const regs = await navigator.serviceWorker.getRegistrations();
+          alert(`FCM: Failed! Regs found: ${regs.length}. First state: ${regs[0]?.active ? 'active' : 'not active'}`);
           return;
         }
 
-        alert('FCM: Active registration found, getting token...');
-        const token = await getToken(messaging, {
-          vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-          serviceWorkerRegistration: registration,
-        });
+        alert('FCM: SW Active! Getting token...');
+        try {
+          const token = await getToken(messaging, {
+            vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+            serviceWorkerRegistration: registration,
+          });
 
-        alert(`FCM: Token retrieved: ${token ? 'YES' : 'NO'}`);
-        if (token && !registeredTokens.has(token) && !isRegistering.current) {
-          isRegistering.current = true;
-          alert('FCM: Registering token');
-          try {
+          if (token && !registeredTokens.has(token) && !isRegistering.current) {
+            isRegistering.current = true;
+            alert('FCM: Registering token with API...');
             await notificationsApi.registerDevice(token, 'web');
             registeredTokens.add(token);
             alert('FCM: Token registered successfully');

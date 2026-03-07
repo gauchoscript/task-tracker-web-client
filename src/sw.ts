@@ -8,8 +8,14 @@ import { app } from './lib/firebase';
 declare let self: ServiceWorkerGlobalScope;
 
 // --- 1. INITIAL EVALUATION: REGISTER ALL LISTENERS IMMEDIATELY ---
-self.addEventListener('install', () => {
+self.addEventListener('install', (event) => {
+  console.log('[sw.ts] Install');
   self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  console.log('[sw.ts] Activate');
+  event.waitUntil(self.clients.claim());
 });
 
 clientsClaim();
