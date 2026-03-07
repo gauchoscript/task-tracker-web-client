@@ -11,7 +11,7 @@ try {
   alert('MAIN: Starting registerSW');
   registerSW({ 
     immediate: true,
-    onRegisteredSW: (url, registration) => {
+    onRegisteredSW: (url) => {
       alert(`MAIN: Service Worker registered! URL: ${url}`);
     },
     onRegisterError: (error) => {
