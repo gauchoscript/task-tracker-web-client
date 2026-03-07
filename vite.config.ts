@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
         srcDir: 'src',
         filename: 'sw.ts',
         registerType: 'autoUpdate',
+        scope: env.VITE_BASE_URL || '/',
         devOptions: {
           enabled: true,
           type: 'module',

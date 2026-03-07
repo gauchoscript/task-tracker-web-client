@@ -33,18 +33,20 @@ export const useFCM = () => {
         alert('FCM: Permission granted. Searching for Service Worker...');
 
         const getActiveRegistration = async (): Promise<ServiceWorkerRegistration | null> => {
-          // Try for up to 30 seconds (60 * 500ms)
+          const scope = import.meta.env.BASE_URL;
+          alert(`FCM: Looking for SW at scope: ${scope}`);
+
           for (let i = 0; i < 60; i++) {
-            const reg = await navigator.serviceWorker.getRegistration();
+            // Get registration for specific scope
+            const reg = await navigator.serviceWorker.getRegistration(scope);
+
             if (reg) {
               if (reg.active) return reg;
 
               const worker = reg.installing || reg.waiting;
               if (worker) {
-                console.log(`FCM: Worker state: ${worker.state}`);
                 if (worker.state === 'activated') return reg;
 
-                // Wait for state change if it's currently installing or waiting
                 await new Promise<void>((resolve) => {
                   const stateChangeHandler = () => {
                     if (worker.state === 'activated' || worker.state === 'redundant') {
@@ -58,8 +60,8 @@ export const useFCM = () => {
                 if (reg.active) return reg;
               }
             }
-            if (i % 5 === 0) { // Alert every 2.5 seconds to avoid spamming but keep user informed
-              alert(`FCM: Waiting for SW (attempt ${i + 1}/60)...`);
+            if (i % 10 === 0 && i > 0) {
+              alert(`FCM: Waiting for SW at ${scope} (attempt ${i + 1}/60)...`);
             }
             await new Promise(r => setTimeout(r, 500));
           }
@@ -70,7 +72,7 @@ export const useFCM = () => {
 
         if (!registration) {
           const regs = await navigator.serviceWorker.getRegistrations();
-          alert(`FCM: Failed! Regs found: ${regs.length}. First state: ${regs[0]?.active ? 'active' : 'not active'}`);
+          alert(`FCM: Failed! Regs found: ${regs.length}.`);
           return;
         }
 
