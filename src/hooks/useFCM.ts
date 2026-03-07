@@ -31,16 +31,29 @@ export const useFCM = () => {
 
       if (permission === 'granted') {
         alert('FCM: Permission granted');
-        // Use navigator.serviceWorker.ready for better reliability
-        const registration = await navigator.serviceWorker.ready;
 
-        alert('FCM: Service worker ready');
+        // Try to get existing registration first, as it might be available even if 'ready' is hanging
+        let registration = await navigator.serviceWorker.getRegistration();
+
+        if (registration) {
+          alert(`FCM: Found registration! State: ${registration.active ? 'active' : registration.waiting ? 'waiting' : 'installing'}`);
+        } else {
+          alert('FCM: No registration found yet, waiting for ready...');
+          registration = await navigator.serviceWorker.ready;
+          alert('FCM: Service worker ready now');
+        }
+
+        if (!registration) {
+          alert('FCM: Failed to get service worker registration');
+          return;
+        }
+
         const token = await getToken(messaging, {
           vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
           serviceWorkerRegistration: registration,
         });
 
-        alert('FCM: Token retrieved');
+        alert(`FCM: Token retrieved: ${token ? 'YES' : 'NO'}`);
         if (token && !registeredTokens.has(token) && !isRegistering.current) {
           isRegistering.current = true;
           alert('FCM: Registering token');
