@@ -33,11 +33,10 @@ export const useFCM = () => {
         alert('FCM: Permission granted. Searching for Service Worker...');
 
         const getActiveRegistration = async (): Promise<ServiceWorkerRegistration | null> => {
-          const scope = import.meta.env.VITE_BASE_URL || '/';
+          const scope = import.meta.env.BASE_URL;
           alert(`FCM: Looking for SW at scope: ${scope}`);
 
           for (let i = 0; i < 60; i++) {
-            // Get registration for specific scope
             const reg = await navigator.serviceWorker.getRegistration(scope);
 
             if (reg) {
@@ -45,16 +44,14 @@ export const useFCM = () => {
 
               const worker = reg.installing || reg.waiting;
               if (worker) {
-                if (worker.state === 'activated') return reg;
-
                 await new Promise<void>((resolve) => {
-                  const stateChangeHandler = () => {
+                  const handler = () => {
                     if (worker.state === 'activated' || worker.state === 'redundant') {
-                      worker.removeEventListener('statechange', stateChangeHandler);
+                      worker.removeEventListener('statechange', handler);
                       resolve();
                     }
                   };
-                  worker.addEventListener('statechange', stateChangeHandler);
+                  worker.addEventListener('statechange', handler);
                   setTimeout(resolve, 2000);
                 });
                 if (reg.active) return reg;

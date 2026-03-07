@@ -8,9 +8,10 @@ import { defineConfig } from 'vitest/config'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  const base = env.VITE_BASE_URL ? (env.VITE_BASE_URL.endsWith('/') ? env.VITE_BASE_URL : `${env.VITE_BASE_URL}/`) : '/'
 
   return {
-    base: env.VITE_BASE_URL || '/',
+    base,
     plugins: [
       react(),
       tailwindcss(),
@@ -19,7 +20,7 @@ export default defineConfig(({ mode }) => {
         srcDir: 'src',
         filename: 'sw.ts',
         registerType: 'autoUpdate',
-        scope: env.VITE_BASE_URL ? (env.VITE_BASE_URL.endsWith('/') ? env.VITE_BASE_URL : `${env.VITE_BASE_URL}/`) : '/',
+        scope: base,
         devOptions: {
           enabled: true,
           type: 'module',

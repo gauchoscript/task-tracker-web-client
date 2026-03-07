@@ -7,20 +7,7 @@ import App from './App.tsx'
 import './index.css'
 
 // Register service worker
-try {
-  alert('MAIN: Starting registerSW');
-  registerSW({ 
-    immediate: true,
-    onRegisteredSW: (url) => {
-      alert(`MAIN: Service Worker registered! URL: ${url}`);
-    },
-    onRegisterError: (error) => {
-      alert(`MAIN: Service Worker registration failed: ${error}`);
-    }
-  })
-} catch (e) {
-  alert(`MAIN: Exception during registerSW: ${e}`);
-}
+registerSW({ immediate: true })
 
 async function enableMocking() {
   if (import.meta.env.VITE_USE_MOCKS !== 'true') {
