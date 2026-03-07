@@ -75,18 +75,21 @@ export const useFCM = () => {
         }
 
         alert('FCM: SW Active! Getting token...');
-        try {
-          const token = await getToken(messaging, {
-            vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-            serviceWorkerRegistration: registration,
-          });
+        const token = await getToken(messaging, {
+          vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+          serviceWorkerRegistration: registration,
+        });
 
-          if (token && !registeredTokens.has(token) && !isRegistering.current) {
-            isRegistering.current = true;
+        if (token && !registeredTokens.has(token) && !isRegistering.current) {
+          isRegistering.current = true;
+          try {
             alert('FCM: Registering token with API...');
             await notificationsApi.registerDevice(token, 'web');
             registeredTokens.add(token);
             alert('FCM: Token registered successfully');
+          } catch (error) {
+            console.error('FCM - Error registering token:', error);
+            alert(`FCM: Error registering token: ${error instanceof Error ? error.message : String(error)}`);
           } finally {
             isRegistering.current = false;
           }

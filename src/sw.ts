@@ -8,7 +8,7 @@ import { app } from './lib/firebase';
 declare let self: ServiceWorkerGlobalScope;
 
 // --- 1. INITIAL EVALUATION: REGISTER ALL LISTENERS IMMEDIATELY ---
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
   console.log('[sw.ts] Install');
   self.skipWaiting();
 });
