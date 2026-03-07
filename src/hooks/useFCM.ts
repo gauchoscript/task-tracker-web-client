@@ -19,7 +19,7 @@ export const useFCM = () => {
     }
 
     if (!window.isSecureContext) {
-      console.error('Notifications require a secure context (HTTPS or localhost)');
+      console.error('FCM - Notifications require a secure context (HTTPS or localhost). Current origin:', window.location.origin);
       return;
     }
 
@@ -30,23 +30,24 @@ export const useFCM = () => {
       const permission = await Notification.requestPermission();
 
       if (permission === 'granted') {
-        // Use getRegistration() for better reliability
-        let registration = await navigator.serviceWorker.getRegistration();
-        if (!registration) {
-          registration = await navigator.serviceWorker.ready;
-        }
+        alert('FCM: Permission granted');
+        // Use navigator.serviceWorker.ready for better reliability
+        const registration = await navigator.serviceWorker.ready;
 
+        alert('FCM: Service worker ready');
         const token = await getToken(messaging, {
           vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
           serviceWorkerRegistration: registration,
         });
 
+        alert('FCM: Token retrieved');
         if (token && !registeredTokens.has(token) && !isRegistering.current) {
           isRegistering.current = true;
+          alert('FCM: Registering token');
           try {
             await notificationsApi.registerDevice(token, 'web');
             registeredTokens.add(token);
-            console.log('FCM Token registered successfully');
+            alert('FCM: Token registered successfully');
           } finally {
             isRegistering.current = false;
           }
@@ -54,12 +55,30 @@ export const useFCM = () => {
       }
     } catch (error) {
       console.error('FCM - Error during notification setup:', error);
+      alert(`FCM: Error during setup: ${error instanceof Error ? error.message : String(error)}`);
     }
   }, []);
 
 
   useEffect(() => {
     requestPermission();
+
+    // Listen for permission changes (supported in most modern browsers)
+    let permissionStatus: PermissionStatus | undefined;
+    if ('permissions' in navigator) {
+      navigator.permissions.query({ name: 'notifications' as PermissionName }).then((status) => {
+        permissionStatus = status;
+        status.onchange = () => {
+          console.log('FCM - Permission status changed to:', status.state);
+          if (status.state === 'granted') {
+            alert('FCM: Permission granted detected!');
+            requestPermission();
+          }
+        };
+      }).catch(err => {
+        console.warn('FCM - Permissions API not fully supported or error:', err);
+      });
+    }
 
     let unsubscribe: (() => void) | undefined;
 
@@ -91,6 +110,9 @@ export const useFCM = () => {
 
     return () => {
       if (unsubscribe) unsubscribe();
+      if (permissionStatus) {
+        permissionStatus.onchange = null;
+      }
     };
   }, [requestPermission, queryClient]);
 

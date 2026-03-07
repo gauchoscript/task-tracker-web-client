@@ -9,18 +9,12 @@ declare let self: ServiceWorkerGlobalScope;
 
 // --- 1. INITIAL EVALUATION: REGISTER ALL LISTENERS IMMEDIATELY ---
 self.addEventListener('install', () => {
-  console.log('[sw.ts] Install');
   self.skipWaiting();
-});
-
-self.addEventListener('activate', () => {
-  console.log('[sw.ts] Activate');
 });
 
 clientsClaim();
 
 self.addEventListener('notificationclick', (event) => {
-  console.log('[sw.ts] Notification click');
   const notification = event.notification;
   const notificationId = notification.data?.notification_id;
 
@@ -42,11 +36,9 @@ self.addEventListener('notificationclick', (event) => {
 precacheAndRoute(self.__WB_MANIFEST);
 
 // --- 3. FIREBASE INITIALIZATION ---
-console.log('[sw.ts] Initializing Firebase Messaging...');
 const messaging = getMessaging(app);
 
 onBackgroundMessage(messaging, (payload) => {
-  console.log('[sw.ts] Background message (FCM):', payload);
   if (payload.notification) {
     const notificationTitle = payload.notification.title || 'New Notification';
     const notificationOptions = {
