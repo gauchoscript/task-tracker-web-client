@@ -45,14 +45,7 @@ precacheAndRoute(self.__WB_MANIFEST);
 const messaging = getMessaging(app);
 
 onBackgroundMessage(messaging, (payload) => {
-  if (payload.notification) {
-    const notificationTitle = payload.notification.title || 'New Notification';
-    const notificationOptions = {
-      body: payload.notification.body,
-      icon: '/pwa-192x192.png',
-      data: payload.data, // Preserve all data including notification_id
-    };
-
-    self.registration.showNotification(notificationTitle, notificationOptions);
-  }
+  console.log('[sw.ts] Background message received:', payload);
+  // FCM automatically shows notifications for messages with 'notification' payload.
+  // We do not call self.registration.showNotification here to avoid duplicates.
 });
