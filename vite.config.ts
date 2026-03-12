@@ -50,9 +50,9 @@ export default defineConfig(({ mode }) => {
               type: 'image/png'
             },
             {
-              src: 'pwa-512x512.png',
+              src: 'pwa-512x512-maskable.jpg',
               sizes: '512x512',
-              type: 'image/png',
+              type: 'image/jpeg',
               purpose: 'any maskable'
             }
           ]

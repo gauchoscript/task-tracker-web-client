@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getMessaging, getToken, isSupported, onMessage } from 'firebase/messaging';
 import { useCallback, useEffect, useRef } from 'react';
 
-// Module-level set to track tokens registered in the current session
+// Module-level tracking to prevent redundant work across hook instances
 const registeredTokens = new Set<string>();
 
 export const useFCM = () => {
@@ -12,7 +12,6 @@ export const useFCM = () => {
   const isRegistering = useRef(false);
 
   const requestPermission = useCallback(async () => {
-    console.log('FCM - requestPermission called');
     if (!('Notification' in window)) {
       console.warn('This browser does not support notifications');
       return;
@@ -30,50 +29,13 @@ export const useFCM = () => {
       const permission = await Notification.requestPermission();
 
       if (permission === 'granted') {
-        alert('FCM: Permission granted. Searching for Service Worker...');
-
-        const getActiveRegistration = async (): Promise<ServiceWorkerRegistration | null> => {
-          const scope = import.meta.env.BASE_URL;
-          alert(`FCM: Looking for SW at scope: ${scope}`);
-
-          for (let i = 0; i < 60; i++) {
-            const reg = await navigator.serviceWorker.getRegistration(scope);
-
-            if (reg) {
-              if (reg.active) return reg;
-
-              const worker = reg.installing || reg.waiting;
-              if (worker) {
-                await new Promise<void>((resolve) => {
-                  const handler = () => {
-                    if (worker.state === 'activated' || worker.state === 'redundant') {
-                      worker.removeEventListener('statechange', handler);
-                      resolve();
-                    }
-                  };
-                  worker.addEventListener('statechange', handler);
-                  setTimeout(resolve, 2000);
-                });
-                if (reg.active) return reg;
-              }
-            }
-            if (i % 10 === 0 && i > 0) {
-              alert(`FCM: Waiting for SW at ${scope} (attempt ${i + 1}/60)...`);
-            }
-            await new Promise(r => setTimeout(r, 500));
-          }
-          return null;
-        };
-
-        const registration = await getActiveRegistration();
+        const registration = await navigator.serviceWorker.ready;
 
         if (!registration) {
-          const regs = await navigator.serviceWorker.getRegistrations();
-          alert(`FCM: Failed! Regs found: ${regs.length}. First state: ${regs[0]?.active ? 'active' : 'not active'}`);
+          console.error('FCM - No active service worker found');
           return;
         }
 
-        alert('FCM: SW Active! Getting token...');
         const token = await getToken(messaging, {
           vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
           serviceWorkerRegistration: registration,
@@ -82,13 +44,10 @@ export const useFCM = () => {
         if (token && !registeredTokens.has(token) && !isRegistering.current) {
           isRegistering.current = true;
           try {
-            alert('FCM: Registering token with API...');
             await notificationsApi.registerDevice(token, 'web');
             registeredTokens.add(token);
-            alert('FCM: Token registered successfully');
           } catch (error) {
             console.error('FCM - Error registering token:', error);
-            alert(`FCM: Error registering token: ${error instanceof Error ? error.message : String(error)}`);
           } finally {
             isRegistering.current = false;
           }
@@ -96,28 +55,24 @@ export const useFCM = () => {
       }
     } catch (error) {
       console.error('FCM - Error during notification setup:', error);
-      alert(`FCM: Error during setup: ${error instanceof Error ? error.message : String(error)}`);
     }
   }, []);
-
 
   useEffect(() => {
     requestPermission();
 
-    // Listen for permission changes (supported in most modern browsers)
+    // Listen for permission changes
     let permissionStatus: PermissionStatus | undefined;
     if ('permissions' in navigator) {
       navigator.permissions.query({ name: 'notifications' as PermissionName }).then((status) => {
         permissionStatus = status;
         status.onchange = () => {
-          console.log('FCM - Permission status changed to:', status.state);
           if (status.state === 'granted') {
-            alert('FCM: Permission granted detected!');
             requestPermission();
           }
         };
       }).catch(err => {
-        console.warn('FCM - Permissions API not fully supported or error:', err);
+        console.warn('FCM - Permissions API not fully supported:', err);
       });
     }
 
@@ -128,9 +83,7 @@ export const useFCM = () => {
         if (!(await isSupported())) return;
         const messaging = getMessaging(app);
 
-        unsubscribe = onMessage(messaging, (payload: any) => {
-          console.log('Foreground message received:', payload);
-          // Invalidate notifications query when a new message arrives
+        unsubscribe = onMessage(messaging, (payload) => {
           queryClient.invalidateQueries({ queryKey: ['notifications'] });
 
           if (payload.notification) {
@@ -144,8 +97,6 @@ export const useFCM = () => {
         console.error('FCM - Error setting up onMessage:', error);
       }
     };
-
-    console.log('FCM - Setting up onMessage');
 
     setupOnMessage();
 
