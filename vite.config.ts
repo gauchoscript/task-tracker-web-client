@@ -25,13 +25,14 @@ export default defineConfig(({ mode }) => {
           enabled: true,
           type: 'module',
         },
-        includeAssets: ['apple-touch-icon.png', 'tasflou-icon.svg'],
+        includeAssets: ['apple-touch-icon.png', 'tasflou-icon.svg', 'tasflou-icon-square.svg'],
         manifest: {
           name: 'Tasflou',
           short_name: 'Tasflou',
           description: 'Modern and elegant task tracker to never forgot your pendings again.',
           theme_color: '#0f172a',
           background_color: '#0f172a',
+          display: 'standalone',
           icons: [
             {
               src: 'tasflou-icon.svg',
@@ -42,18 +43,20 @@ export default defineConfig(({ mode }) => {
             {
               src: 'pwa-192x192.png',
               sizes: '192x192',
-              type: 'image/png'
+              type: 'image/png',
+              purpose: 'any'
             },
             {
               src: 'pwa-512x512.png',
               sizes: '512x512',
-              type: 'image/png'
+              type: 'image/png',
+              purpose: 'any'
             },
             {
-              src: 'pwa-512x512-maskable.jpg',
-              sizes: '512x512',
-              type: 'image/jpeg',
-              purpose: 'any maskable'
+              src: 'tasflou-icon-square.svg',
+              sizes: 'any',
+              type: 'image/svg+xml',
+              purpose: 'maskable'
             }
           ]
         }
