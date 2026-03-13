@@ -23,6 +23,9 @@ clientsClaim();
 self.addEventListener('notificationclick', (event) => {
   const notification = event.notification;
   const notificationId = notification.data?.notification_id;
+  const taskId = notification.data?.task_id;
+  const baseUrl = self.registration.scope;
+  const targetUrl = taskId ? `${baseUrl}tasks/${taskId}` : baseUrl;
 
   notification.close();
 
@@ -32,8 +35,11 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      if (clientList.length > 0) return clientList[0].focus();
-      return self.clients.openWindow('/');
+      if (clientList.length > 0) {
+        const client = clientList[0];
+        return client.navigate(targetUrl).then((c) => c?.focus());
+      }
+      return self.clients.openWindow(targetUrl);
     })
   );
 });
@@ -46,6 +52,13 @@ const messaging = getMessaging(app);
 
 onBackgroundMessage(messaging, (payload) => {
   console.log('[sw.ts] Background message received:', payload);
-  // FCM automatically shows notifications for messages with 'notification' payload.
-  // We do not call self.registration.showNotification here to avoid duplicates.
+
+  const title = payload.notification?.title || 'New Notification';
+  const options: NotificationOptions = {
+    body: payload.notification?.body,
+    icon: '/pwa-192x192.png',
+    data: payload.data,
+  };
+
+  self.registration.showNotification(title, options);
 });

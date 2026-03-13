@@ -83,13 +83,15 @@ export const useFCM = () => {
         if (!(await isSupported())) return;
         const messaging = getMessaging(app);
 
-        unsubscribe = onMessage(messaging, (payload) => {
+        unsubscribe = onMessage(messaging, async (payload) => {
           queryClient.invalidateQueries({ queryKey: ['notifications'] });
 
           if (payload.notification) {
-            new Notification(payload.notification.title || 'New Notification', {
+            const registration = await navigator.serviceWorker.ready;
+            registration.showNotification(payload.notification.title!, {
               body: payload.notification.body,
               icon: '/pwa-192x192.png',
+              data: payload.data,
             });
           }
         });
