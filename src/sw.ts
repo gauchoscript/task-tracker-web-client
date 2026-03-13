@@ -1,9 +1,7 @@
 /// <reference lib="webworker" />
-import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw';
 import { clientsClaim } from 'workbox-core';
 import { precacheAndRoute } from 'workbox-precaching';
 import { recordClickedNotification } from './lib/db';
-import { app } from './lib/firebase';
 
 declare let self: ServiceWorkerGlobalScope;
 
@@ -48,17 +46,4 @@ self.addEventListener('notificationclick', (event) => {
 precacheAndRoute(self.__WB_MANIFEST);
 
 // --- 3. FIREBASE INITIALIZATION ---
-const messaging = getMessaging(app);
-
-onBackgroundMessage(messaging, (payload) => {
-  console.log('[sw.ts] Background message received:', payload);
-
-  const title = payload.notification?.title || 'New Notification';
-  const options: NotificationOptions = {
-    body: payload.notification?.body,
-    icon: '/pwa-192x192.png',
-    data: payload.data,
-  };
-
-  self.registration.showNotification(title, options);
-});
+// No manual initialization needed as FCM handles notification payloads automatically.

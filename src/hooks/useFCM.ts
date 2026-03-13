@@ -87,12 +87,15 @@ export const useFCM = () => {
           queryClient.invalidateQueries({ queryKey: ['notifications'] });
 
           if (payload.notification) {
-            const registration = await navigator.serviceWorker.ready;
-            registration.showNotification(payload.notification.title!, {
-              body: payload.notification.body,
-              icon: '/pwa-192x192.png',
-              data: payload.data,
-            });
+            // Only show the notification if this tab is the focused one.
+            if (document.hasFocus()) {
+              const registration = await navigator.serviceWorker.ready;
+              registration.showNotification(payload.notification.title!, {
+                body: payload.notification.body,
+                icon: '/pwa-192x192.png',
+                data: payload.data,
+              });
+            }
           }
         });
       } catch (error) {
