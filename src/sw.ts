@@ -53,7 +53,7 @@ const messaging = getMessaging(app);
 onBackgroundMessage(messaging, (payload) => {
   console.log('[sw.ts] Background message received:', payload);
 
-  const title = payload.notification?.title;
+  const title = payload.notification?.title!;
   const notificationId = payload.data?.notification_id;
 
   const options: NotificationOptions = {
