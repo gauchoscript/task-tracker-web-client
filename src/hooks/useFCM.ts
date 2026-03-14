@@ -87,13 +87,16 @@ export const useFCM = () => {
           queryClient.invalidateQueries({ queryKey: ['notifications'] });
 
           if (payload.notification) {
-            // Only show the notification if this tab is the focused one.
-            if (document.hasFocus()) {
+            // Only show the notification if this tab is visible or focused.
+            if (document.visibilityState === 'visible' || document.hasFocus()) {
               const registration = await navigator.serviceWorker.ready;
+              const notificationId = payload.data?.notification_id;
+
               registration.showNotification(payload.notification.title!, {
                 body: payload.notification.body,
                 icon: '/pwa-192x192.png',
                 data: payload.data,
+                tag: notificationId, // Using a tag prevents duplicate notifications from showing
               });
             }
           }
