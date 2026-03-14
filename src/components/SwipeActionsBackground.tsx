@@ -1,19 +1,31 @@
-import { motion, type MotionValue } from 'framer-motion';
+import { motion, useTransform, type MotionValue } from 'framer-motion';
 import { Check, Trash2 } from 'lucide-react';
 
 interface SwipeActionsBackgroundProps {
-  background: MotionValue<string>;
-  completeOpacity: MotionValue<number>;
-  deleteOpacity: MotionValue<number>;
-  isDone: boolean;
+  swipeX: MotionValue<number>;
+  threshold: number;
 }
 
 export function SwipeActionsBackground({
-  background,
-  completeOpacity,
-  deleteOpacity,
-  isDone,
+  swipeX,
+  threshold
 }: SwipeActionsBackgroundProps) {
+
+  const background = useTransform(
+    swipeX,
+    [-threshold, -threshold * 0.2, 0, threshold * 0.2, threshold],
+    [
+      'rgba(239, 68, 68, 1)', // Red
+      'rgba(239, 68, 68, 0)',
+      'rgba(0, 0, 0, 0)',
+      'rgba(34, 197, 94, 0)',
+      'rgba(34, 197, 94, 1)', // Green
+    ]
+  );
+
+  const completeOpacity = useTransform(swipeX, [0, 20, 50], [0, 0, 1]);
+  const deleteOpacity = useTransform(swipeX, [0, -20, -50], [0, 0, 1]);
+
   return (
     <motion.div
       style={{ background }}
@@ -24,7 +36,7 @@ export function SwipeActionsBackground({
           <Check size={24} />
         </motion.div>
         <motion.span style={{ opacity: completeOpacity }} className="font-bold">
-          {isDone ? 'Undo' : 'Complete'}
+          Done
         </motion.span>
       </div>
       <div className="flex items-center gap-2 text-white">

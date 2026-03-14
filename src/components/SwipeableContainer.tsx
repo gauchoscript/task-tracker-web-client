@@ -3,38 +3,42 @@ import { type ReactNode } from 'react';
 
 interface SwipeableContainerProps {
   x: MotionValue<number>;
-  onDragStart: () => void;
-  onDragEnd: (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => void;
+  onSwipeRight: () => void;
+  onSwipeLeft: () => void;
+  threshold: number;
   isOverlay?: boolean;
-  isDone: boolean;
-  isSwiping: boolean;
+  disabled?: boolean;
   children: ReactNode;
 }
 
 export function SwipeableContainer({
   x,
-  onDragStart,
-  onDragEnd,
+  onSwipeRight,
+  onSwipeLeft,
+  threshold,
   isOverlay,
-  isDone,
-  isSwiping,
+  disabled,
   children,
 }: SwipeableContainerProps) {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (info.offset.x > threshold) {
+      onSwipeRight();
+    } else if (info.offset.x < -threshold) {
+      onSwipeLeft();
+    }
+  };
+
   return (
     <motion.div
-      drag={isOverlay ? false : "x"}
+      drag={isOverlay || disabled ? false : "x"}
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.7}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
+      onDragEnd={handleDragEnd}
       style={{ x }}
       className={`glass-card p-4 transition-shadow duration-200 ${
-        isOverlay ? 'shadow-2xl ring-2 ring-blue-500/50 cursor-grabbing' : 'cursor-grab active:cursor-grabbing'
-      } ${
-        isDone 
-          ? 'border-green-500/30 bg-green-500/5 opacity-80' 
-          : 'hover:border-blue-500/30'
-      } ${isSwiping ? 'shadow-lg z-10' : ''}`}
+        isOverlay ? 'shadow-2xl ring-2 ring-blue-500/50 cursor-grabbing' : 
+        disabled ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'
+      }`}
     >
       {children}
     </motion.div>

@@ -1,9 +1,9 @@
-import { useSwipeToActions } from '@/hooks/useSwipeToActions';
 import { useDeleteTaskMutation, useUpdateTaskMutation } from '@/hooks/useTasks';
 import { formatDateForDisplay } from '@/lib/dateUtils';
 import { TaskStatus, type Task } from '@/lib/types';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useMotionValue } from 'framer-motion';
 import { SwipeActionsBackground } from './SwipeActionsBackground';
 import { SwipeableContainer } from './SwipeableContainer';
 
@@ -27,29 +27,10 @@ export function TaskItem({ task, onView, onEdit, isOverlay }: TaskItemProps) {
   const deleteMutation = useDeleteTaskMutation();
   const updateMutation = useUpdateTaskMutation();
   const isDone = task.status === TaskStatus.DONE;
+  const isTodo = task.status === TaskStatus.TODO;
 
-  const { 
-    x, 
-    background, 
-    completeOpacity, 
-    deleteOpacity, 
-    isSwiping, 
-    setIsSwiping, 
-    handleDragEnd 
-  } = useSwipeToActions({
-    onSwipeRight: () => {
-      const newStatus = isDone ? TaskStatus.TODO : TaskStatus.DONE;
-      updateMutation.mutate({ id: task.id, data: { status: newStatus } });
-    },
-    onSwipeLeft: () => handleDelete(),
-  });
-
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-    zIndex: isDragging ? 50 : 'auto',
-    opacity: isDragging ? 0.5 : 1,
-  };
+  const swipeX = useMotionValue(0);
+  const swipeThreshold = 100;
 
   const handleDelete = () => {
     if (confirm('Are you sure you want to delete this task?')) {
@@ -57,12 +38,25 @@ export function TaskItem({ task, onView, onEdit, isOverlay }: TaskItemProps) {
     }
   };
 
+  const onSwipeRight = () => {
+    updateMutation.mutate({ id: task.id, data: { status: TaskStatus.DONE } });
+  };
+
+  const onSwipeLeft = () => handleDelete();
+
+  const taskDraggingPlaceholderStyle = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 'auto',
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   // If this item is being dragged in the list, show a placeholder
   if (isDragging && !isOverlay) {
     return (
       <div
         ref={setNodeRef}
-        style={style}
+        style={taskDraggingPlaceholderStyle}
         className="h-[100px] mb-3 border-2 border-dashed border-blue-500/50 rounded-xl bg-blue-500/5"
       />
     );
@@ -71,26 +65,21 @@ export function TaskItem({ task, onView, onEdit, isOverlay }: TaskItemProps) {
   return (
     <div
       ref={setNodeRef}
-      style={isOverlay ? undefined : style}
+      style={isOverlay ? undefined : taskDraggingPlaceholderStyle}
       className="relative mb-3 group"
     >
       {/* Background Actions */}
-      {!isOverlay && (
-        <SwipeActionsBackground
-          background={background}
-          completeOpacity={completeOpacity}
-          deleteOpacity={deleteOpacity}
-          isDone={isDone}
-        />
+      {!isOverlay && isTodo && (
+        <SwipeActionsBackground swipeX={swipeX} threshold={swipeThreshold}/>
       )}
 
       <SwipeableContainer
-        x={x}
-        isDone={isDone}
+        x={swipeX}
+        threshold={swipeThreshold}
         isOverlay={isOverlay}
-        isSwiping={isSwiping}
-        onDragStart={() => setIsSwiping(true)}
-        onDragEnd={handleDragEnd}
+        disabled={!isTodo}
+        onSwipeRight={onSwipeRight}
+        onSwipeLeft={onSwipeLeft}
       >
         <div className="flex items-start gap-3">
           {/* Drag handle */}
