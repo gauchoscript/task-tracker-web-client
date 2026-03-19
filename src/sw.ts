@@ -52,16 +52,4 @@ const messaging = getMessaging(app);
 
 onBackgroundMessage(messaging, (payload) => {
   console.log('[sw.ts] Background message received:', payload);
-
-  const title = payload.notification?.title!;
-  const notificationId = payload.data?.notification_id;
-
-  const options: NotificationOptions = {
-    body: payload.notification?.body,
-    icon: '/pwa-192x192.png',
-    data: payload.data,
-    tag: notificationId, // Using a tag prevents duplicate notifications from showing
-  };
-
-  self.registration.showNotification(title, options);
 });
