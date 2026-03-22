@@ -47,7 +47,6 @@ export const useNotifications = () => {
         try {
           const pendingIds = await getPendingNotifications();
           if (pendingIds.length > 0) {
-            console.log('Processing items from storage:', pendingIds);
             for (const id of pendingIds) {
               await markAsReadMutation.mutateAsync({ id, read_source: 'web_push' });
             }

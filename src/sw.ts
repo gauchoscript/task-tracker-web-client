@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw';
+import { getMessaging } from 'firebase/messaging/sw';
 import { clientsClaim } from 'workbox-core';
 import { precacheAndRoute } from 'workbox-precaching';
 import { recordClickedNotification } from './lib/db';
@@ -9,12 +9,10 @@ declare let self: ServiceWorkerGlobalScope;
 
 // --- 1. INITIAL EVALUATION: REGISTER ALL LISTENERS IMMEDIATELY ---
 self.addEventListener('install', () => {
-  console.log('[sw.ts] Install');
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('[sw.ts] Activate');
   event.waitUntil(self.clients.claim());
 });
 
@@ -22,8 +20,9 @@ clientsClaim();
 
 self.addEventListener('notificationclick', (event) => {
   const notification = event.notification;
-  const notificationId = notification.data?.notification_id;
-  const taskId = notification.data?.task_id;
+  const data = notification.data?.FCM_MSG?.data;
+  const notificationId = data?.notification_id;
+  const taskId = data?.task_id;
   const baseUrl = self.registration.scope;
   const targetUrl = taskId ? `${baseUrl}tasks/${taskId}` : baseUrl;
 
@@ -48,8 +47,4 @@ self.addEventListener('notificationclick', (event) => {
 precacheAndRoute(self.__WB_MANIFEST);
 
 // --- 3. FIREBASE INITIALIZATION ---
-const messaging = getMessaging(app);
-
-onBackgroundMessage(messaging, (payload) => {
-  console.log('[sw.ts] Background message received:', payload);
-});
+getMessaging(app);
