@@ -1,6 +1,7 @@
 import { useDeleteTaskMutation, useTasksQuery, useUpdateTaskMutation } from '@/hooks/useTasks';
 import { formatDateForDisplay } from '@/lib/dateUtils';
 import { TaskStatus } from '@/lib/types';
+import Linkify from 'linkify-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export function TaskDetailPage() {
@@ -55,7 +56,7 @@ export function TaskDetailPage() {
   const isDone = task.status === TaskStatus.DONE;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-3xl mx-auto px-4 pb-8 pt-4">
       {/* Top Navigation */}
       <div className="flex items-center justify-between mb-12">
         <button
@@ -160,10 +161,12 @@ export function TaskDetailPage() {
           {task.description && (
             <div className="relative">
               <div className="absolute -left-6 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500/50 to-transparent rounded-full opacity-50" />
-              <p className={`text-xl md:text-2xl leading-relaxed font-light ${
+              <p className={`text-xl md:text-2xl leading-relaxed font-light break-words whitespace-pre-wrap ${
                 isDone ? 'text-slate-500' : 'text-slate-300'
               }`}>
-                {task.description}
+                <Linkify options={{ target: '_blank', rel: 'noopener noreferrer', className: 'text-blue-400 hover:text-blue-300 underline underline-offset-4 decoration-blue-500/30 hover:decoration-blue-400/50 transition-all' }}>
+                  {task.description}
+                </Linkify>
               </p>
             </div>
           )}
