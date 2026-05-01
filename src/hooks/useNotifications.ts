@@ -40,6 +40,14 @@ export const useNotifications = () => {
     },
   });
 
+  const markAllAsReadMutation = useMutation({
+    mutationFn: (read_source?: string) =>
+      notificationsApi.markAllAsRead(read_source ?? 'web_client'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+
   // Process pending notifications from IndexedDB
   useEffect(() => {
     if (isAuthenticated) {
@@ -67,6 +75,7 @@ export const useNotifications = () => {
     hasNextPage,
     fetchNextPage,
     markAsRead: (id: string, read_source?: string) => markAsReadMutation.mutate({ id, read_source }),
+    markAllAsRead: (read_source?: string) => markAllAsReadMutation.mutate(read_source),
   };
 };
 

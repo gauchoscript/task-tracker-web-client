@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export function NotificationList() {
-  const { notifications, loading, total, fetchNextPage, hasNextPage, markAsRead } = useNotifications();
+  const { notifications, loading, total, fetchNextPage, hasNextPage, markAsRead, markAllAsRead } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -59,8 +59,18 @@ export function NotificationList() {
       {isOpen && (
         <div className="fixed left-4 right-4 mt-3 sm:absolute sm:left-auto sm:right-0 sm:w-80 max-h-[480px] overflow-hidden bg-navy-800 border border-navy-700 rounded-lg shadow-xl z-50 flex flex-col">
           <div className="p-3 border-b border-navy-700 flex items-center justify-between bg-navy-800/50 backdrop-blur-sm sticky top-0 z-10">
-            <h3 className="font-semibold text-white">Notifications</h3>
-            <span className="text-xs text-slate-400">{total} total</span>
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-white">Notifications</h3>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-navy-700 text-slate-400 font-medium">{total}</span>
+            </div>
+            {unreadCount > 0 && (
+              <button
+                onClick={() => markAllAsRead()}
+                className="text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors px-2 py-1 rounded hover:bg-indigo-500/10"
+              >
+                Mark all read
+              </button>
+            )}
           </div>
 
           <div className="flex-1 overflow-y-auto">

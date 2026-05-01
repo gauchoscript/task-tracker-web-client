@@ -226,5 +226,12 @@ export const notificationsApi = {
       body: JSON.stringify({ read_source }),
     });
   },
+
+  markAllAsRead: async (read_source: string): Promise<void> => {
+    return fetchWithAuth<void>('/notifications/read', {
+      method: 'PATCH',
+      body: JSON.stringify({ read_source }),
+    });
+  },
 };
 

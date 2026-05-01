@@ -11,6 +11,7 @@ export function SigninPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const signin = useAuthStore((state) => state.signin);
 
   const {
@@ -21,6 +22,12 @@ export function SigninPage() {
   } = useForm<SigninFormData>({
     resolver: zodResolver(signinSchema),
   });
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     const state = location.state as { email?: string; password?: string; signupSuccess?: boolean } | null;
@@ -36,9 +43,9 @@ export function SigninPage() {
       }
       
       // Clear location state to prevent message from reappearing on refresh
-      navigate(location.pathname, { replace: true, state: {} });
+      navigate(location.pathname, { replace: true, state: { ...state, signupSuccess: false } });
     }
-  }, [location, reset, navigate]);
+  }, [location.pathname, location.state, reset, navigate]);
 
   const onSubmit = async (data: SigninFormData) => {
     try {
