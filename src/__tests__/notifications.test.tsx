@@ -123,4 +123,30 @@ describe('Notification List', () => {
 
         markAsReadSpy.mockRestore();
     });
+
+    it('marks all as read when clicking the mark all read button', async () => {
+        const markAllAsReadSpy = vi.spyOn(notificationsApi, 'markAllAsRead');
+        
+        render(<NotificationList />);
+
+        // Click on the bell to open dropdown
+        const bellButton = screen.getByLabelText(/notifications/i);
+        fireEvent.click(bellButton);
+
+        // Wait for notifications to load
+        await waitFor(() => {
+            expect(screen.getByText(/mark all read/i)).toBeInTheDocument();
+        });
+
+        // Click on the mark all read button
+        const markAllButton = screen.getByText(/mark all read/i);
+        fireEvent.click(markAllButton);
+
+        // Verify markAllAsRead was called
+        await waitFor(() => {
+            expect(markAllAsReadSpy).toHaveBeenCalledWith('web_client');
+        });
+
+        markAllAsReadSpy.mockRestore();
+    });
 });

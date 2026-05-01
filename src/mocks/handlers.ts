@@ -2,7 +2,6 @@ import type { Task } from '@/lib/types';
 import { TaskStatus } from '@/lib/types';
 import { http, HttpResponse } from 'msw';
 
-const apiUrl = import.meta.env.VITE_API_URL;
 
 // Initial tasks state
 let tasks: Task[] = [
@@ -32,24 +31,34 @@ let notifications = [
 
 export const handlers = [
   // Auth
-  http.post(`${apiUrl}/auth/signup`, () => {
+  http.post('*/auth/signup', () => {
     return HttpResponse.json({ message: 'User created successfully' }, { status: 201 })
   }),
 
-  http.post(`${apiUrl}/auth/signin`, () => {
-    return HttpResponse.json({ access_token: 'fake-token', refresh_token: 'fake-refresh', token_type: 'bearer' }, { status: 200 })
+  http.post('*/auth/signin', () => {
+    return HttpResponse.json({ 
+      access_token: 'fake-token', 
+      refresh_token: 'fake-refresh', 
+      token_type: 'bearer',
+      expires_in: 3600
+    }, { status: 200 })
   }),
 
-  http.post(`${apiUrl}/auth/refresh`, async ({ request }) => {
+  http.post('*/auth/refresh', async ({ request }) => {
     const { refresh_token, email } = await request.json() as { refresh_token: string, email: string };
     if (refresh_token === 'fake-refresh' && email) {
-      return HttpResponse.json({ access_token: 'new-fake-token', refresh_token: 'fake-refresh', token_type: 'bearer' }, { status: 200 })
+      return HttpResponse.json({ 
+        access_token: 'new-fake-token', 
+        refresh_token: 'fake-refresh', 
+        token_type: 'bearer',
+        expires_in: 3600
+      }, { status: 200 })
     }
     return new HttpResponse(null, { status: 401 });
   }),
 
   // Tasks
-  http.get(`${apiUrl}/tasks`, ({ request }) => {
+  http.get('*/tasks', ({ request }) => {
     const url = new URL(request.url);
     const status = url.searchParams.get('status');
 
@@ -60,7 +69,7 @@ export const handlers = [
     return HttpResponse.json(filteredTasks)
   }),
 
-  http.get(`${apiUrl}/tasks/:id`, ({ params }) => {
+  http.get('*/tasks/:id', ({ params }) => {
     const { id } = params;
     const task = tasks.find(t => t.id === id);
     if (!task) {
@@ -69,7 +78,7 @@ export const handlers = [
     return HttpResponse.json(task, { status: 200 });
   }),
 
-  http.post(`${apiUrl}/tasks`, async ({ request }) => {
+  http.post('*/tasks', async ({ request }) => {
     const newTask = await request.json() as Partial<Task>;
     const createdTask: Task = {
       title: 'New Task',
@@ -86,7 +95,7 @@ export const handlers = [
     return HttpResponse.json(createdTask, { status: 201 })
   }),
 
-  http.patch(`${apiUrl}/tasks/:id`, async ({ params, request }) => {
+  http.patch('*/tasks/:id', async ({ params, request }) => {
     const { id } = params;
     const updates = await request.json() as Partial<Task>;
     const taskIndex = tasks.findIndex(t => t.id === id);
@@ -97,27 +106,42 @@ export const handlers = [
     return new HttpResponse(null, { status: 404 });
   }),
 
-  http.delete(`${apiUrl}/tasks/:id`, ({ params }) => {
+  http.delete('*/tasks/:id', ({ params }) => {
     const { id } = params;
     tasks = tasks.filter(t => t.id !== id);
     return new HttpResponse(null, { status: 204 })
   }),
 
+  http.patch('*/tasks/:id/move', async ({ params, request }) => {
+    const { id } = params;
+    await request.json(); // Consume request body to avoid warnings if any
+    const taskIndex = tasks.findIndex(t => t.id === id);
+    
+    if (taskIndex === -1) {
+      return new HttpResponse(null, { status: 404 });
+    }
+
+    // In a real mock we would update the position, but for simplicity 
+    // we'll just return the task as is for now to satisfy the API
+    return HttpResponse.json(tasks[taskIndex], { status: 200 });
+  }),
+
   // Notifications
-  http.post(`${apiUrl}/notifications/devices`, () => {
+  http.post('*/notifications/devices', () => {
     return new HttpResponse(null, { status: 201 });
   }),
 
-  http.get(`${apiUrl}/notifications`, () => {
+  http.get('*/notifications', () => {
     return HttpResponse.json({
       items: notifications,
       total: notifications.length,
+      unread: notifications.filter(n => !n.read_at).length,
       skip: 0,
       limit: 20
     });
   }),
 
-  http.patch(`${apiUrl}/notifications/:id/read`, ({ params }) => {
+  http.patch('*/notifications/:id/read', ({ params }) => {
     const { id } = params;
     const index = notifications.findIndex(n => n.id === id);
     if (index > -1) {
@@ -125,6 +149,11 @@ export const handlers = [
       return HttpResponse.json(notifications[index], { status: 200 });
     }
     return new HttpResponse(null, { status: 404 });
+  }),
+
+  http.patch('*/notifications/read', () => {
+    notifications = notifications.map(n => ({ ...n, read_at: new Date().toISOString() }));
+    return new HttpResponse(null, { status: 204 });
   }),
 ]
 
